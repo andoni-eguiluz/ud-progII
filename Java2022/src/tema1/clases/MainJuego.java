@@ -23,5 +23,7 @@ public class MainJuego {
 		
 		// juego.nombre = "Tetris";
 		System.out.println( juego.getNombre() );
+		juego.setPrecioFinal( 12.199999999 );
+		System.out.println( "Mi juego es: " + juego.toString() );
 	}
 }

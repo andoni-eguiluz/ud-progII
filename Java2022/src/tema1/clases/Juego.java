@@ -46,12 +46,12 @@ public class Juego {
 	
 	public Juego(String nombre, double precio, Date fechaCompra, String localizacion,
 			ArrayList<String> listaJugadores, Genero genero) {
-		this( nombre );
-		setPrecioFinal( precio );
+		this( nombre, genero, precio );
+		// this.genero = genero;
+		// setPrecioFinal( precio );
 		this.fechaCompra = fechaCompra;
 		this.localizacion = localizacion;
 		this.listaJugadores = listaJugadores;
-		this.genero = genero;
 	}
 
 	public String getNombre() {
@@ -130,6 +130,11 @@ public class Juego {
 		// TODO pendiente comprobar que es un juego
 		Juego j = (Juego) obj;
 		return nombre.equals(j.nombre);
+	}
+	
+	@Override
+	public String toString() {
+		return nombre + " [" + genero + "] - precio " + String.format( "%.2f", precioFinal );
 	}
 	
 }
