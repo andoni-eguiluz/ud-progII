@@ -1,6 +1,7 @@
 package tema1.clases.bolas;
 
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 
 import utils.ventanas.ventanaBitmap.VentanaGrafica;
 
@@ -8,6 +9,8 @@ public class MainBolas {
 	private static VentanaGrafica v;
 	private static Bola bola1;
 	private static Bola bola2;
+	private static Bola bola3;
+	private static final double TIEMPO_FOTOGRAMA = 0.01; // Sgs
 	
 	public static void main(String[] args) {
 		// pruebas();
@@ -28,8 +31,30 @@ public class MainBolas {
 		bola2.setVelX( 100 );
 		bola2.setVelY( 100 );
 		
-		bola1.mover( v );  // NO DEVUELVE EL CONTROL  (BLOQUEANTE)
-		bola2.mover( v );
+		// Bucle de tiempo real
+		// INPUT - PROCESS - OUTPUT
+		// System.out.println( KeyEvent.VK_PLUS );
+		while (!v.estaCerrada()) {
+			// System.out.println( v.getCodUltimaTeclaTecleada() );
+			int codTecla = v.getCodUltimaTeclaTecleada();
+			if (codTecla==KeyEvent.VK_PLUS) {
+				bola3 = new Bola(v);
+			}
+			bola1.mover( v, TIEMPO_FOTOGRAMA );
+			bola2.mover( v, TIEMPO_FOTOGRAMA );
+			if (bola3!=null) {
+				bola3.mover( v, TIEMPO_FOTOGRAMA );
+			}
+			if (bola1.choqueEntreBolas(bola2)) {
+				// Invertir velocidades
+				// System.out.println( "Choque" );
+				bola1.setVelX( -bola1.getVelX() );
+				bola1.setVelY( -bola1.getVelY() );
+				bola2.setVelX( -bola2.getVelX() );
+				bola2.setVelY( -bola2.getVelY() );
+			}
+			v.espera( (long) (TIEMPO_FOTOGRAMA * 1000) );
+		}
 		
 	}
 	
@@ -48,6 +73,7 @@ public class MainBolas {
 			v.espera( 20 );
 		}
 	}
+	
 	private static void pruebas() {
 		Bola bola1 = new Bola();
 		System.out.println( bola1.getxCentro() + "," + bola1.getyCentro() );

@@ -1,10 +1,18 @@
 package tema1.clases.bolas;
 
 import java.awt.Color;
+import java.util.Random;
 
 import utils.ventanas.ventanaBitmap.VentanaGrafica;
 
 public class Bola {
+	private static Random random = new Random();  // Generador de aleatorios (1 PARA TODAS)
+	private static Color[] colores = { Color.YELLOW, Color.RED, Color.GREEN, Color.BLUE, Color.CYAN, Color.MAGENTA, Color.BLACK };
+	// Otra manera de inicializar los estáticos:
+//	static {
+//		random = new Random(); 
+//	}
+	
 	private double xCentro;
 	private double yCentro;
 	private int radio;
@@ -40,6 +48,29 @@ public class Bola {
 	 */
 	public Bola() {
 		this( 0, 0, 10, Color.BLUE, new Color(255,255,255) );
+	}
+	
+	/** Crea una bola aleatoria 
+	 * Toda la bola dentro de la ventana recibida
+	 * Radio entre 5 y 30 pixels
+	 * Velocidad x,y entre 20 y 100 pixels / seg, positiva o negativa
+	 * Color de borde y fondo aleatorios entre los colores amarillo, rojo, verde, azul, cyan, magenta y negro
+	 * @param v	Ventana de referencia para la creación
+	 */
+	public Bola(VentanaGrafica v) {
+		radio = random.nextInt(26) + 5;
+		xCentro = random.nextInt(v.getAnchura()-radio-radio) + radio;
+		yCentro = random.nextInt(v.getAltura()-radio-radio) + radio;
+		velX = random.nextInt(80) + 20;
+		velY = random.nextInt(80) + 20;
+		if (random.nextBoolean() ) {
+			velX = -velX;
+		}
+		if (random.nextBoolean()) {
+			velY = -velY;
+		}
+		colorBorde = colores[ random.nextInt(colores.length) ];
+		colorFondo = colores[ random.nextInt(colores.length) ];
 	}
 
 	public double getxCentro() {
@@ -182,6 +213,15 @@ public class Bola {
 	
 	public boolean chocaEnHorizontal( VentanaGrafica v ) {
 		return (xCentro < radio) || (xCentro > v.getAnchura() - radio);
+	}
+	
+	/** Comprueba si hay choque entre bolas
+	 * @param otraBola	Bola con la que comprobar choque
+	 * @return	true si se tocan this con otraBola, false si no
+	 */
+	public boolean choqueEntreBolas(Bola otraBola) {
+		double distCentros = Math.sqrt( (xCentro-otraBola.xCentro)*(xCentro-otraBola.xCentro) + (yCentro-otraBola.yCentro)*(yCentro-otraBola.yCentro) );
+		return distCentros <= radio + otraBola.radio;		
 	}
 	
 }
