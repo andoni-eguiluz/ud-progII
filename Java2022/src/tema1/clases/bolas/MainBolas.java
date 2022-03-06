@@ -2,14 +2,19 @@ package tema1.clases.bolas;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import utils.ventanas.ventanaBitmap.VentanaGrafica;
 
 public class MainBolas {
 	private static VentanaGrafica v;
-	private static Bola bola1;
-	private static Bola bola2;
-	private static Bola bola3;
+
+	// Lista de bolas
+	private static ArrayList<Bola> listaBolas = new ArrayList<Bola>();
+	// private static Bola bola1;  // No es necesario si usamos la lista
+	// private static Bola bola2;
+	// private static Bola bola3;
+	
 	private static final double TIEMPO_FOTOGRAMA = 0.01; // Sgs
 	
 	public static void main(String[] args) {
@@ -20,16 +25,18 @@ public class MainBolas {
 	
 	private static void reboteBolas() {
 		v = new VentanaGrafica( 1000, 600, "Rebote de bolas" );
-		v.getJFrame().setLocation( 2000, 0 );
-		bola1 = new Bola( 500, 300, 20, Color.BLUE, Color.YELLOW );
-		bola1.dibujar( v );
-		bola1.setVelX( 500 );
-		bola1.setVelY( 200 );
+		// v.getJFrame().setLocation( 2000, 0 );  // Segunda pantalla (solo si se tiene)
+		Bola bola = new Bola( 500, 300, 20, Color.BLUE, Color.YELLOW );
+		// bola.dibujar( v );
+		listaBolas.add( bola );
+		bola.setVelX( 500 );
+		bola.setVelY( 200 );
 		
-		bola2 = new Bola( 200, 200, 25, Color.PINK, Color.CYAN );
-		bola2.dibujar( v );
-		bola2.setVelX( 100 );
-		bola2.setVelY( 100 );
+		bola = new Bola( 200, 200, 25, Color.PINK, Color.CYAN );
+		listaBolas.add( bola );
+		// bola.dibujar( v );
+		bola.setVelX( 100 );
+		bola.setVelY( 100 );
 		
 		// Bucle de tiempo real
 		// INPUT - PROCESS - OUTPUT
@@ -38,21 +45,36 @@ public class MainBolas {
 			// System.out.println( v.getCodUltimaTeclaTecleada() );
 			int codTecla = v.getCodUltimaTeclaTecleada();
 			if (codTecla==KeyEvent.VK_PLUS) {
-				bola3 = new Bola(v);
+				Bola bola3 = new Bola(v);  // Crea bola aleatoria
+				listaBolas.add( bola3 );
 			}
-			bola1.mover( v, TIEMPO_FOTOGRAMA );
-			bola2.mover( v, TIEMPO_FOTOGRAMA );
-			if (bola3!=null) {
-				bola3.mover( v, TIEMPO_FOTOGRAMA );
+			// bola1.mover( v, TIEMPO_FOTOGRAMA );
+			// bola2.mover( v, TIEMPO_FOTOGRAMA );
+			// if (bola3!=null) { bola3.mover( v, TIEMPO_FOTOGRAMA ); }
+			for (Bola b : listaBolas) {
+				b.mover( v, TIEMPO_FOTOGRAMA );
 			}
-			if (bola1.choqueEntreBolas(bola2)) {
+			// if (bola1.choqueEntreBolas(bola2)) {
 				// Invertir velocidades
 				// System.out.println( "Choque" );
-				bola1.setVelX( -bola1.getVelX() );
-				bola1.setVelY( -bola1.getVelY() );
-				bola2.setVelX( -bola2.getVelX() );
-				bola2.setVelY( -bola2.getVelY() );
+			//	bola1.setVelX( -bola1.getVelX() );
+			//	bola1.setVelY( -bola1.getVelY() );
+			//	bola2.setVelX( -bola2.getVelX() );
+			//	bola2.setVelY( -bola2.getVelY() );
+			// }
+			for (int i=0; i<listaBolas.size(); i++) {
+				for (int j=i+1; j<listaBolas.size(); j++) {  // i y j no coinciden, son todas las parejas sin repetición
+					Bola bola1 = listaBolas.get(i);
+					Bola bola2 = listaBolas.get(j);
+					if (bola1.choqueEntreBolas(bola2)) {  // Rebote - invertir velocidades
+						bola1.setVelX( -bola1.getVelX() );
+						bola1.setVelY( -bola1.getVelY() );
+						bola2.setVelX( -bola2.getVelX() );
+						bola2.setVelY( -bola2.getVelY() );
+					}
+				}
 			}
+			
 			v.espera( (long) (TIEMPO_FOTOGRAMA * 1000) );
 		}
 		
