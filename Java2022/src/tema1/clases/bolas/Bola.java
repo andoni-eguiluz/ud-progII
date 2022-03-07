@@ -1,6 +1,7 @@
 package tema1.clases.bolas;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.Random;
 
 import utils.ventanas.ventanaBitmap.VentanaGrafica;
@@ -222,6 +223,11 @@ public class Bola {
 	public boolean choqueEntreBolas(Bola otraBola) {
 		double distCentros = Math.sqrt( (xCentro-otraBola.xCentro)*(xCentro-otraBola.xCentro) + (yCentro-otraBola.yCentro)*(yCentro-otraBola.yCentro) );
 		return distCentros <= radio + otraBola.radio;		
+	}
+	
+	public boolean contienePunto( Point punto ) {
+		double distAlCentro = Math.sqrt( (xCentro-punto.x)*(xCentro-punto.x) + (yCentro-punto.y)*(yCentro-punto.y) );
+		return distAlCentro <= radio;
 	}
 	
 }

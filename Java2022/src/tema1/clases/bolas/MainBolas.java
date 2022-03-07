@@ -1,6 +1,7 @@
 package tema1.clases.bolas;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
@@ -10,7 +11,8 @@ public class MainBolas {
 	private static VentanaGrafica v;
 
 	// Lista de bolas
-	private static ArrayList<Bola> listaBolas = new ArrayList<Bola>();
+	// private static ArrayList<Bola> listaBolas = new ArrayList<Bola>();
+	private static GrupoBolas grupoBolas = new GrupoBolas();
 	// private static Bola bola1;  // No es necesario si usamos la lista
 	// private static Bola bola2;
 	// private static Bola bola3;
@@ -28,12 +30,12 @@ public class MainBolas {
 		// v.getJFrame().setLocation( 2000, 0 );  // Segunda pantalla (solo si se tiene)
 		Bola bola = new Bola( 500, 300, 20, Color.BLUE, Color.YELLOW );
 		// bola.dibujar( v );
-		listaBolas.add( bola );
+		grupoBolas.anyadir( bola );
 		bola.setVelX( 500 );
 		bola.setVelY( 200 );
 		
 		bola = new Bola( 200, 200, 25, Color.PINK, Color.CYAN );
-		listaBolas.add( bola );
+		grupoBolas.anyadir( bola );
 		// bola.dibujar( v );
 		bola.setVelX( 100 );
 		bola.setVelY( 100 );
@@ -46,14 +48,28 @@ public class MainBolas {
 			int codTecla = v.getCodUltimaTeclaTecleada();
 			if (codTecla==KeyEvent.VK_PLUS) {
 				Bola bola3 = new Bola(v);  // Crea bola aleatoria
-				listaBolas.add( bola3 );
+				grupoBolas.anyadir( bola3 );
 			}
+			Point click = v.getRatonPulsado();
+			if (click!=null) {  // Borrar posible bola
+				int posicion = grupoBolas.buscarBolaEnPunto(click);
+				// System.out.println( posicion );
+				if (posicion!=-1) {
+					grupoBolas.coger(posicion).borrar(v);
+					grupoBolas.borrar( posicion );
+				}
+			}
+			
 			// bola1.mover( v, TIEMPO_FOTOGRAMA );
 			// bola2.mover( v, TIEMPO_FOTOGRAMA );
 			// if (bola3!=null) { bola3.mover( v, TIEMPO_FOTOGRAMA ); }
-			for (Bola b : listaBolas) {
-				b.mover( v, TIEMPO_FOTOGRAMA );
-			}
+
+//			for (int i=0; i<grupoBolas.tamanyo(); i++) {
+//				Bola b = grupoBolas.coger(i);
+//				b.mover( v, TIEMPO_FOTOGRAMA );
+//			}
+			grupoBolas.mover( v, TIEMPO_FOTOGRAMA );
+			
 			// if (bola1.choqueEntreBolas(bola2)) {
 				// Invertir velocidades
 				// System.out.println( "Choque" );
@@ -62,18 +78,9 @@ public class MainBolas {
 			//	bola2.setVelX( -bola2.getVelX() );
 			//	bola2.setVelY( -bola2.getVelY() );
 			// }
-			for (int i=0; i<listaBolas.size(); i++) {
-				for (int j=i+1; j<listaBolas.size(); j++) {  // i y j no coinciden, son todas las parejas sin repetición
-					Bola bola1 = listaBolas.get(i);
-					Bola bola2 = listaBolas.get(j);
-					if (bola1.choqueEntreBolas(bola2)) {  // Rebote - invertir velocidades
-						bola1.setVelX( -bola1.getVelX() );
-						bola1.setVelY( -bola1.getVelY() );
-						bola2.setVelX( -bola2.getVelX() );
-						bola2.setVelY( -bola2.getVelY() );
-					}
-				}
-			}
+			grupoBolas.choqueEntreBolas();
+			
+			grupoBolas.dibujar( v );
 			
 			v.espera( (long) (TIEMPO_FOTOGRAMA * 1000) );
 		}
