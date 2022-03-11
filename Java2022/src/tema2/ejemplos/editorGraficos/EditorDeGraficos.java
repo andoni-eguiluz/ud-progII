@@ -28,7 +28,7 @@ public class EditorDeGraficos {
 		// vent.getJFrame().setLocation( 2000, 0 );
 		ArrayList<Grafico> grupo = new ArrayList<Grafico>();
 		Point clickInicial = null;
-		vent.setMensaje( "Ctrl-click crea vector en origen, Drag crea vector, Alt-click borra, Click selecciona, otro click mueve" );
+		vent.setMensaje( "Ctrl-click crea vector, Drag crea con C o R, Alt-click borra, Click selecciona, otro click mueve" );
 		vent.setDibujadoInmediato( false ); // Preparación de doble buffer
 		Grafico grafSel = null;
 		// BOOLEANAS en cortocircuito
