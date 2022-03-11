@@ -2,7 +2,8 @@ package tema2.ejemplos.bolasYBloques;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.geom.Point2D;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.Random;
 
 import utils.ventanas.ventanaBitmap.VentanaGrafica;
@@ -14,8 +15,8 @@ public class Bloque extends ObjetoAnimacion {
 	
 	// Parte no static
 	
-	private double ancho;      // Píxels de ancho del bloque
-	private double alto;       // Píxels de alto del bloque
+	protected double ancho;      // Píxels de ancho del bloque
+	protected double alto;       // Píxels de alto del bloque
 	
 	/** Crea un bloque nuevo sin movimiento (con velocidad 0)
 	 * @param x	Coordenada x del centro
@@ -114,202 +115,212 @@ public class Bloque extends ObjetoAnimacion {
 		this.alto = alto;
 	}
 	
-	/** Dibuja el bloque
-	 * @param v	Ventana en la que dibujar el bloque
-	 */
+	@Override
+	public Rectangle2D getRectangulo() {
+		return new java.awt.geom.Rectangle2D.Double( x-ancho/2, y-alto/2, ancho, alto );
+	}
+	
 	@Override
 	public void dibujar( VentanaGrafica v ) {
 		v.dibujaRect( x-ancho/2, y-alto/2, ancho, alto, 2.0f, colorBorde, colorFondo );
+		if (visuVel) {
+			v.dibujaFlecha( x, y, x+velX, y+velY, 2.0f, colorVelocidad, 10 );
+		}
 	}
 	
-	/** Borra el bloque, pintándolo en blanco (se borra si el fondo es blanco)
-	 * @param v	Ventana en la que borrar el bloque
-	 */
+	@Override
 	public void borrar( VentanaGrafica v ) {
 		v.dibujaRect( x-ancho/2, y-alto/2, ancho, alto, 2.0f, Color.WHITE, Color.WHITE );
+		if (visuVel) {
+			v.dibujaFlecha( x, y, x+velX, y+velY, 2.0f, Color.WHITE, 10 );
+		}
 	}
 	
-	/** Mueve el bloque un tiempo indicado
-	 * @param milis	Tiempo de movimiento, en milisegundos
-	 */
-	public void mover( double milis ) {
-		antX = x;
-		antY = y;
-		x += velX*milis/1000;
-		y += velY*milis/1000;
+	@Override
+	public boolean chocaBordeVertical( Rectangle rect ) {
+		return y-alto/2 <= 0 || y+alto/2 >= rect.height;
 	}
 	
-	/** Determina si el bloque choca con el borde vertical del espacio de dibujado
-	 * @param v	Ventana de dibujado
-	 * @return	true si el bloque toca con el borde inferior o superior, false en caso contrario
-	 */
-	public boolean chocaBordeVertical( VentanaGrafica v ) {
-		return y-alto/2 <= 0 || y+alto/2 >= v.getAltura();
+	@Override
+	public boolean chocaBordeHorizontal( Rectangle rect ) {
+		return x-ancho/2 <= 0 || x+ancho/2 >= rect.width;
 	}
 	
-	/** Determina si el bloque choca con el borde horizontal del espacio de dibujado
-	 * @param v	Ventana de dibujado
-	 * @return	true si el bloque toca con el borde izquierdo o derecho, false en caso contrario
-	 */
-	public boolean chocaBordeHorizontal( VentanaGrafica v ) {
-		return x-ancho/2 <= 0 || x+ancho/2 >= v.getAnchura();
+	@Override
+	public boolean chocaCon( ObjetoAnimacion objeto2 ) {
+		if (objeto2 instanceof Bloque) {
+			Bloque bloque2 = (Bloque) objeto2;
+			double distCentrosX = Math.abs( x-bloque2.x );
+			double distCentrosY = Math.abs( y-bloque2.y );
+			return distCentrosX <= ancho/2 + bloque2.ancho/2 && distCentrosY <= alto/2 + bloque2.alto/2;
+		} else {
+			Bola bola = (Bola) objeto2;
+			return vectorChoqueConObjeto(bola)!=null;
+		}
 	}
 	
-	/** Comprueba si hay choque entre bloques
-	 * @param bloque2	Bloque con el que comprobar choque
-	 * @return	true si se tocan este bloque y bloque2, false en caso contrario
-	 */
-	public boolean chocaCon( Bloque bloque2 ) {
-		double distCentrosX = Math.abs( x-bloque2.x );
-		double distCentrosY = Math.abs( y-bloque2.y );
-		return distCentrosX <= ancho/2 + bloque2.ancho/2 && distCentrosY <= alto/2 + bloque2.alto/2;
-	}
-	
-	/** Informa si el bloque contiene un punto de la ventana
-	 * @param punto	Punto a consultar
-	 * @return	true si ese punto está dentro del bloque (incluyendo su borde), false si no lo está
-	 */
+	@Override
 	public boolean contienePunto( Point punto ) {
 		double distX = Math.abs( x-punto.x );
 		double distY = Math.abs( y-punto.y );
 		return distX <= ancho/2 && distY <= alto/2;
 	}
 	
-	/** Devuelve el impacto de choque entre dos bloques
-	 * @param bloque2	Bloque con el que probar el choque
-	 * @return	Devuelve null si no chocan, un vector con forma de punto indicando el ángulo y amplitud del choque sobre el bloque en curso
-	 */
-	public Polar vectorChoqueConObjeto( Bloque bloque2 ) {
-		if (chocaCon(bloque2)) {  // Chocan
-			double difX = bloque2.x - x;
-			double difY = bloque2.y - y;
-			boolean solapeHoriz = (x-ancho/2 >= bloque2.x-bloque2.ancho/2 && x+ancho/2 <= bloque2.x+bloque2.ancho/2) ||
-					(x-ancho/2 <= bloque2.x-bloque2.ancho/2 && x+ancho/2 >= bloque2.x+bloque2.ancho/2);  // Se solapan en toda su anchura
-			boolean solapeVert = (y-alto/2 >= bloque2.y-bloque2.alto/2 && y+alto/2 <= bloque2.y+bloque2.alto/2) ||
-					(y-alto/2 <= bloque2.y-bloque2.alto/2 && y+alto/2 >= bloque2.y+bloque2.alto/2);  // Se solapan en toda su anchura
-			if (solapeHoriz) {  // Choque vertical
-				double moduloChoque = alto/2+bloque2.alto/2 - Math.abs(difY);
-				if (difY<0) moduloChoque = -moduloChoque;
-				return Polar.crearPolarDesdeXY( 0, moduloChoque );
-			} else if (solapeVert) {  // Choque horizontal
-				double moduloChoque = ancho/2+bloque2.ancho/2 - Math.abs(difX);
-				if (difX<0) moduloChoque = -moduloChoque;
-				return Polar.crearPolarDesdeXY( moduloChoque, 0 );
-			} else {
-				double moduloChoqueX = ancho/2+bloque2.ancho/2 - Math.abs(difX);
-				if (difX<0) moduloChoqueX = -moduloChoqueX;
-				double moduloChoqueY = alto/2+bloque2.alto/2 - Math.abs(difY);
-				if (difY<0) moduloChoqueY = -moduloChoqueY;
-				return Polar.crearPolarDesdeXY( moduloChoqueX, moduloChoqueY );
-			}
-		} else {  // No chocan
-			return null;
-		}
-	}	
-
-	/** Calcula si hay choque con una bola
-	 * @param bola	Bola con la que comprobar
-	 * @return	true si hay choque con esa bola, false en caso contrario
-	 */
-	public boolean chocaCon( Bola bola ) {
-		return vectorChoqueConObjeto(bola)!=null;
-	}
-	
-	/** Calcula el posible choque entre un bloque y una bola
-	 * @param bola	bola que queremos comprobar si choca con el bloque
-	 * @return	null si no chocan, vector de choque con forma de punto si chocan
-	 */
-	public Polar vectorChoqueConObjeto( Bola bola ) {
-		double distCentrosX = Math.abs( x-bola.getX() );
-		double distCentrosY = Math.abs( y-bola.getY() );
-		// Choque horizontal con bloque
-		if (bola.getY() >= y-alto/2 &&
-			bola.getY() <= y+alto/2) {  // La y de la bola está dentro del bloque...
-			if (bola.getX()-bola.getRadio()<=x+ancho/2 &&
-				bola.getX()+bola.getRadio()>=x-ancho/2 ) {  // ...y la x lateral de la bola está dentro del bloque
-				if (distCentrosX >= 0) {
-					return Polar.crearPolarDesdeXY( (x-ancho/2) - (bola.getX()+bola.getRadio()), 0 );
-				} else {
-					return Polar.crearPolarDesdeXY( (x+ancho/2) - (bola.getX()-bola.getRadio()), 0 );
+	@Override
+	public Polar vectorChoqueConObjeto( ObjetoAnimacion objeto2 ) {
+		if (objeto2 instanceof Bola) {
+			Bola bola = (Bola) objeto2;
+			double distCentrosX = x-bola.getX();
+			double distCentrosY = y-bola.getY();
+			// Choque horizontal con bloque
+			if (bola.getY() >= y-alto/2 &&
+				bola.getY() <= y+alto/2) {  // La y de la bola está dentro del bloque...
+				if (bola.getX()-bola.getRadio()<=x+ancho/2 &&
+					bola.getX()+bola.getRadio()>=x-ancho/2 ) {  // ...y la x lateral de la bola está dentro del bloque
+					if (distCentrosX >= 0) {
+						return Polar.crearPolarDesdeXY( (x-ancho/2) - (bola.getX()+bola.getRadio()), 0 );
+					} else {
+						return Polar.crearPolarDesdeXY( (x+ancho/2) - (bola.getX()-bola.getRadio()), 0 );
+					}
 				}
 			}
-		}
-		// Choque vertical con bloque
-		if (bola.getX() >= x-ancho/2 &&
-			bola.getX() <= x+ancho/2) {  // La x de la bola está dentro del bloque...
-			if (bola.getY()-bola.getRadio()<=y+alto/2 &&
-				bola.getY()+bola.getRadio()>=y-alto/2 ) {  // ...y la y borde de la bola está dentro del bloque: choque
-				if (distCentrosY >= 0) {
-					return Polar.crearPolarDesdeXY( 0, (y-alto/2) - (bola.getY()+bola.getRadio()) );
-				} else {
-					return Polar.crearPolarDesdeXY( 0, (y+alto/2) - (bola.getY()-bola.getRadio()) );
+			// Choque vertical con bloque
+			if (bola.getX() >= x-ancho/2 &&
+				bola.getX() <= x+ancho/2) {  // La x de la bola está dentro del bloque...
+				if (bola.getY()-bola.getRadio()<=y+alto/2 &&
+					bola.getY()+bola.getRadio()>=y-alto/2 ) {  // ...y la y borde de la bola está dentro del bloque: choque
+					if (distCentrosY >= 0) {
+						return Polar.crearPolarDesdeXY( 0, (y-alto/2) - (bola.getY()+bola.getRadio()) );
+					} else {
+						return Polar.crearPolarDesdeXY( 0, (y+alto/2) - (bola.getY()-bola.getRadio()) );
+					}
 				}
 			}
-		}
-		// Coche con esquina: calculamos las distancias del centro de la bola a las cuatro esquinas
-		double dist1 = Fisica.distancia( bola.getX(), bola.getY(), x+ancho/2, y+alto/2 );
-		double dist2 = Fisica.distancia( bola.getX(), bola.getY(), x+ancho/2, y-alto/2 );
-		double dist3 = Fisica.distancia( bola.getX(), bola.getY(), x-ancho/2, y+alto/2 );
-		double dist4 = Fisica.distancia( bola.getX(), bola.getY(), x-ancho/2, y-alto/2 );
-		if (dist1<=bola.getRadio() || dist2<=bola.getRadio() || dist3<=bola.getRadio() || dist4<=bola.getRadio()) { // Si alguna de esas distancias es inferior al radio, hay choque
-			if (dist1<=bola.getRadio()) {
-				return Polar.crearPolarDesdeXY( (x+ancho/2) - (bola.getX()-bola.getRadio()), (y+alto/2) - (bola.getY()-bola.getRadio()) );
-			} else if (dist2<=bola.getRadio()) {
-				return Polar.crearPolarDesdeXY( (x+ancho/2) - (bola.getX()-bola.getRadio()), (y-alto/2) - (bola.getY()+bola.getRadio()) );
-			} else if (dist3<=bola.getRadio()) {
-				return Polar.crearPolarDesdeXY( (x-ancho/2) - (bola.getX()+bola.getRadio()), (y+alto/2) - (bola.getY()-bola.getRadio()) );
-			} else {
-				return Polar.crearPolarDesdeXY( (x-ancho/2) - (bola.getX()+bola.getRadio()), (y-alto/2) - (bola.getY()+bola.getRadio()) );
+			// Coche con esquina: calculamos las distancias del centro de la bola a las cuatro esquinas
+			double dist1 = Fisica.distancia( bola.getX(), bola.getY(), x+ancho/2, y+alto/2 );
+			double dist2 = Fisica.distancia( bola.getX(), bola.getY(), x+ancho/2, y-alto/2 );
+			double dist3 = Fisica.distancia( bola.getX(), bola.getY(), x-ancho/2, y+alto/2 );
+			double dist4 = Fisica.distancia( bola.getX(), bola.getY(), x-ancho/2, y-alto/2 );
+			if (dist1<=bola.getRadio() || dist2<=bola.getRadio() || dist3<=bola.getRadio() || dist4<=bola.getRadio()) { // Si alguna de esas distancias es inferior al radio, hay choque
+				if (dist1<=bola.getRadio()) {
+					return Polar.crearPolarDesdeXY( (x+ancho/2) - (bola.getX()-bola.getRadio()), (y+alto/2) - (bola.getY()-bola.getRadio()) );
+				} else if (dist2<=bola.getRadio()) {
+					return Polar.crearPolarDesdeXY( (x+ancho/2) - (bola.getX()-bola.getRadio()), (y-alto/2) - (bola.getY()+bola.getRadio()) );
+				} else if (dist3<=bola.getRadio()) {
+					return Polar.crearPolarDesdeXY( (x-ancho/2) - (bola.getX()+bola.getRadio()), (y+alto/2) - (bola.getY()-bola.getRadio()) );
+				} else {
+					return Polar.crearPolarDesdeXY( (x-ancho/2) - (bola.getX()+bola.getRadio()), (y-alto/2) - (bola.getY()+bola.getRadio()) );
+				}
 			}
+			return null;  // Si no hay ninguno de los tres choques, es que no chocan
+		} else {  // Bloque
+			Bloque bloque2 = (Bloque) objeto2;
+			if (this.chocaCon(bloque2)) {  // Chocan - calcular el vector de choque
+				// Calculamos esquinas
+				double xIzquierdaBloque1 = x - ancho/2;
+				double xDerechaBloque1 = x + ancho/2;
+				double yArribaBloque1 = y - alto/2;
+				double yAbajoBloque1 = y + alto/2;
+				double xIzquierdaBloque2 = bloque2.x - bloque2.ancho/2;
+				double xDerechaBloque2 = bloque2.x + bloque2.ancho/2;
+				double yArribaBloque2 = bloque2.y - bloque2.alto/2;
+				double yAbajoBloque2 = bloque2.y + bloque2.alto/2;
+				// Calculamos todas las opciones de posición relativa entre el bloque 1 y el 2
+				if (xIzquierdaBloque2 < xIzquierdaBloque1) {  // Segundo bloque empieza a la izquierda
+					if (xDerechaBloque2<=xDerechaBloque1) {  // Segundo bloque acaba dentro
+						if (yAbajoBloque2 < yAbajoBloque1 && yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca dentro a la izquierda del primero
+							return Polar.crearPolarDesdeXY( xIzquierdaBloque1-xDerechaBloque2, 0.0 );
+						} else if (yAbajoBloque2 < yAbajoBloque1) {  // Segundo bloque choca por arriba a la izquierda del primero
+							return Polar.crearPolarDesdeXY( xIzquierdaBloque1-xDerechaBloque2, yArribaBloque1-yAbajoBloque2 );
+						} else if (yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca por abajo a la izquierda del primero
+							return Polar.crearPolarDesdeXY( xIzquierdaBloque1-xDerechaBloque2, yAbajoBloque1-yArribaBloque2 );
+						} else { // Segundo bloque engloba por la izquierda al primero
+							return Polar.crearPolarDesdeXY( xIzquierdaBloque1-xDerechaBloque2, 0.0 );
+						}
+					} else { // Segundo bloque engloba en horizontal al primero
+						if (yAbajoBloque2 < yAbajoBloque1 && yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca dentro en vertical del primero
+							return Polar.crearPolarDesdeXY( xDerechaBloque1-xIzquierdaBloque1, yAbajoBloque2-yArribaBloque2 );
+						} else if (yAbajoBloque2 < yAbajoBloque1) {  // Segundo bloque choca por arriba del primero
+							return Polar.crearPolarDesdeXY( 0, yArribaBloque1-yAbajoBloque2 );
+						} else if (yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca por abajo del primero
+							return Polar.crearPolarDesdeXY( 0, yAbajoBloque1-yArribaBloque2 );
+						} else { // Segundo bloque engloba por ambos lados al primero
+							return Polar.crearPolarDesdeXY( -(xDerechaBloque1-xIzquierdaBloque1), -(yAbajoBloque1-yArribaBloque1) );
+						}
+					}
+				} else if (xDerechaBloque2 <= xDerechaBloque1) { // Segundo bloque contenido en horizontal dentro del primero
+					if (yAbajoBloque2 < yAbajoBloque1 && yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca dentro del primero
+						return Polar.crearPolarDesdeXY( xDerechaBloque2-xIzquierdaBloque2, yAbajoBloque2-yArribaBloque2 );
+					} else if (yAbajoBloque2 < yAbajoBloque1) {  // Segundo bloque choca por arriba dentro del primero
+						return Polar.crearPolarDesdeXY( 0, yArribaBloque1-yAbajoBloque2 );
+					} else if (yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca por abajo dentro del primero
+						return Polar.crearPolarDesdeXY( 0, yAbajoBloque1-yArribaBloque2 );
+					} else { // Segundo bloque engloba en vertical al primero
+						return Polar.crearPolarDesdeXY( xDerechaBloque2-xIzquierdaBloque2, yAbajoBloque1-yArribaBloque1 );
+					}
+				} else { // Segundo bloque empieza dentro y acaba a la derecha del primero
+					if (yAbajoBloque2 < yAbajoBloque1 && yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca dentro a la derecha del primero
+						return Polar.crearPolarDesdeXY( xDerechaBloque1-xIzquierdaBloque2, 0.0 );
+					} else if (yAbajoBloque2 < yAbajoBloque1) {  // Segundo bloque choca por arriba a la derecha del primero
+						return Polar.crearPolarDesdeXY( xDerechaBloque1-xIzquierdaBloque2, yArribaBloque1-yAbajoBloque2 );
+					} else if (yArribaBloque2 > yArribaBloque1) {  // Segundo bloque choca por abajo a la derecha del primero
+						return Polar.crearPolarDesdeXY( xDerechaBloque1-xIzquierdaBloque2, yAbajoBloque1-yArribaBloque2 );
+					} else { // Segundo bloque engloba por la derecha al primero
+						return Polar.crearPolarDesdeXY( xDerechaBloque1-xIzquierdaBloque2, 0.0 );
+					}
+				}
+			} else {  // No chocan
+				return null;
+			}
+//			Otra manera diferente
+//			if (chocaCon(bloque2)) {  // Chocan
+//				double difX = bloque2.x - x;
+//				double difY = bloque2.y - y;
+//				boolean solapeHoriz = (x-ancho/2 >= bloque2.x-bloque2.ancho/2 && x+ancho/2 <= bloque2.x+bloque2.ancho/2) ||
+//						(x-ancho/2 <= bloque2.x-bloque2.ancho/2 && x+ancho/2 >= bloque2.x+bloque2.ancho/2);  // Se solapan en toda su anchura
+//				boolean solapeVert = (y-alto/2 >= bloque2.y-bloque2.alto/2 && y+alto/2 <= bloque2.y+bloque2.alto/2) ||
+//						(y-alto/2 <= bloque2.y-bloque2.alto/2 && y+alto/2 >= bloque2.y+bloque2.alto/2);  // Se solapan en toda su anchura
+//				if (solapeHoriz) {  // Choque vertical
+//					double moduloChoque = alto/2+bloque2.alto/2 - Math.abs(difY);
+//					if (difY<0) moduloChoque = -moduloChoque;
+//					return Polar.crearPolarDesdeXY( 0, moduloChoque );
+//				} else if (solapeVert) {  // Choque horizontal
+//					double moduloChoque = ancho/2+bloque2.ancho/2 - Math.abs(difX);
+//					if (difX<0) moduloChoque = -moduloChoque;
+//					return Polar.crearPolarDesdeXY( moduloChoque, 0 );
+//				} else {
+//					double moduloChoqueX = ancho/2+bloque2.ancho/2 - Math.abs(difX);
+//					if (difX<0) moduloChoqueX = -moduloChoqueX;
+//					double moduloChoqueY = alto/2+bloque2.alto/2 - Math.abs(difY);
+//					if (difY<0) moduloChoqueY = -moduloChoqueY;
+//					return Polar.crearPolarDesdeXY( moduloChoqueX, moduloChoqueY );
+//				}
+//			} else {  // No chocan
+//				return null;
+//			}
 		}
-		return null;  // Si no hay ninguno de los tres choques, es que no chocan
 	}
 
-	
-	/** Calcula el área del bloque, partiendo de su información de ancho y alto
-	 * @return	Área del bloque
-	 */
+	@Override
 	public double getArea() {
 		return ancho*alto;
 	}
 
-	/** Calcula el volumen del prisma que correspondería al bloque, suponiendo que su profundidad es igual que su dimensión más corta
-	 * @return	Volumen del bloque suponiendo un bloque tridimensional
-	 */
+	@Override
 	public double getVolumen() {
 		return ancho*alto*Math.min(ancho, alto);
 	}
 
-	/** Devuelve el avance horizontal del último movimiento (método mover)
-	 * @return	Diferencia entre la posición x actual y la anterior
-	 */
-	public double getAvanceX() {
-		return x - antX;
-	}
-	
-	/** Devuelve el avance vertical del último movimiento (método mover)
-	 * @return	Diferencia entre la posición y actual y la anterior
-	 */
-	public double getAvanceY() {
-		return x - antY;
-	}
-	
-	/** Devuelve el módulo de la velocidad
-	 * @return	Módulo de velocidad (raíz cuadrada de la suma de cuadrados de las velocidades ortogonales vx y vy)
-	 */
-	public double getVelocidad() {
-		return Math.sqrt( velX * velX + velY * velY );
-	}
-	
-	/** Devuelve el cálculo de energía del bloque
-	 * @return	Energía calculada con la fórmula general de energía, entendiendo el volumen del bloque correspondiente como masa: 0,5 x (m * v^2)
-	 */
+	@Override
 	public double getEnergia() {
 		return 0.5 * getVolumen() * getVelocidad()*getVelocidad();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
+		if (!(obj instanceof Bloque)) {
+			return false;
+		}
 		Bloque bloque2 = (Bloque) obj;
 		return x==bloque2.x&& y==bloque2.y && ancho==bloque2.ancho && alto==bloque2.alto;
 	}

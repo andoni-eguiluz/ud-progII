@@ -2,7 +2,8 @@ package tema2.ejemplos.bolasYBloques;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.geom.Point2D;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.Random;
 
 import utils.ventanas.ventanaBitmap.VentanaGrafica;
@@ -19,7 +20,7 @@ public class Bola extends ObjetoAnimacion {
 	
 	// Parte no static
 	
-	private double radio;      // Píxels de radio de la bola
+	protected double radio;      // Píxels de radio de la bola
 	
 	/** Crea una bola nueva sin movimiento (con velocidad 0)
 	 * @param x	Coordenada x del centro
@@ -99,130 +100,96 @@ public class Bola extends ObjetoAnimacion {
 	public void setRadio(double radio) {
 		this.radio = radio;
 	}
+
+	@Override
+	public Rectangle2D getRectangulo() {
+		return new java.awt.geom.Rectangle2D.Double( x-radio, y-radio, radio*2, radio*2 );
+	}
 	
-	/** Dibuja la bola
-	 * @param v	Ventana en la que dibujar la bola
-	 */
 	@Override
 	public void dibujar( VentanaGrafica v ) {
 		v.dibujaCirculo( x, y, radio, 2.0f, colorBorde, colorFondo );
+		if (visuVel) {
+			v.dibujaFlecha( x, y, x+velX, y+velY, 2.0f, colorVelocidad, 10 );
+		}
 	}
 	
-	/** Borra la bola, pintándola en blanco (se borra si el fondo es blanco)
-	 * @param v	Ventana en la que borrar la bola
-	 */
+	@Override
 	public void borrar( VentanaGrafica v ) {
 		v.dibujaCirculo( x, y, radio, 2.0f, Color.WHITE, Color.WHITE );
+		if (visuVel) {
+			v.dibujaFlecha( x, y, x+velX, y+velY, 2.0f, Color.WHITE, 10 );
+		}
 	}
 	
-	/** Mueve la bola un tiempo indicado
-	 * @param milis	Tiempo de movimiento, en milisegundos
-	 */
-	public void mover( double milis ) {
-		antX = x;
-		antY = y;
-		x += velX*milis/1000;
-		y += velY*milis/1000;
+	@Override
+	public boolean chocaBordeVertical( Rectangle rect ) {
+		return y-radio <= 0 || y+radio >= rect.height;
 	}
 	
-	/** Determina si la bola choca con el borde vertical del espacio de dibujado
-	 * @param v	Ventana de dibujado
-	 * @return	true si la bola toca con el borde inferior o superior, false en caso contrario
-	 */
-	public boolean chocaBordeVertical( VentanaGrafica v ) {
-		return y-radio <= 0 || y+radio >= v.getAltura();
+	@Override
+	public boolean chocaBordeHorizontal( Rectangle rect ) {
+		return x-radio <= 0 || x+radio >= rect.width;
 	}
 	
-	/** Determina si la bola choca con el borde horizontal del espacio de dibujado
-	 * @param v	Ventana de dibujado
-	 * @return	true si la bola toca con el borde izquierdo o derecho, false en caso contrario
-	 */
-	public boolean chocaBordeHorizontal( VentanaGrafica v ) {
-		return x-radio <= 0 || x+radio >= v.getAnchura();
+	@Override
+	public boolean chocaCon( ObjetoAnimacion objeto2 ) {
+		if (objeto2 instanceof Bola) {
+			Bola bola2 = (Bola) objeto2;
+			double distCentros = Math.sqrt( (x-bola2.x)*(x-bola2.x) + (y-bola2.y)*(y-bola2.y) );
+			return (radio + bola2.radio) >= distCentros;
+		} else {
+			Bloque bloque = (Bloque) objeto2;
+			return bloque.chocaCon( this );  // Codificado en la clase Bloque
+		}
 	}
 	
-	/** Comprueba si hay choque entre bolas
-	 * @param bola2	Bola con la que comprobar choque
-	 * @return	true si se tocan esta bola y bola2, false en caso contrario
-	 */
-	public boolean chocaCon( Bola bola2 ) {
-		double distCentros = Math.sqrt( (x-bola2.x)*(x-bola2.x) + (y-bola2.y)*(y-bola2.y) );
-		return (radio + bola2.radio) >= distCentros;
-	}
-	
-	/** Calcula si hay choque con un bloque
-	 * @param bloque	Bloque con el que comprobar
-	 * @return	true si hay choque con ese bloque, false en caso contrario
-	 */
-	public boolean chocaCon( Bloque bloque ) {
-		return bloque.chocaCon( this );  // Codificado en la clase Bloque
-	}
-	
-	/** Informa si la bola contiene un punto de la ventana
-	 * @param punto	Punto a consultar
-	 * @return	true si ese punto está dentro de la bola (incluyendo su borde), false si no lo está
-	 */
+	@Override
 	public boolean contienePunto( Point punto ) {
 		double distCentroAPunto = Math.sqrt( (x-punto.x)*(x-punto.x) + (y-punto.y)*(y-punto.y) );
 		return distCentroAPunto <= radio;
 	}
-	
-	/** Devuelve el impacto de choque entre dos bolas
-	 * @param pelota2	Bola con la que probar el choque
-	 * @return	Devuelve null si no chocan, un vector con forma de punto indicando el ángulo y amplitud del choque sobre la pelota en curso
-	 */
-	public Polar vectorChoqueConObjeto( Bola pelota2 ) {
-		Polar ret = Polar.crearPolarDesdeXY( pelota2.x-x, pelota2.y-y );
-		double moduloChoque = radio + pelota2.radio - ret.getModulo();
-		if (moduloChoque < 0) return null;  // No hay choque
-		ret.setModulo( moduloChoque );
-		return ret;
+
+	@Override
+	public Polar vectorChoqueConObjeto( ObjetoAnimacion objeto2 ) {
+		if (objeto2 instanceof Bloque) {
+			Polar ret = ((Bloque)objeto2).vectorChoqueConObjeto(this);
+			if (ret!=null) {
+				ret.setArgumento( ret.getArgumento() + Math.PI );  // Invierte el vector
+			}
+			return ret;
+		} else if (objeto2 instanceof Bola) {
+			Polar ret = Polar.crearPolarDesdeXY( objeto2.x-x, objeto2.y-y );
+			double moduloChoque = radio + ((Bola)objeto2).radio - ret.getModulo();
+			if (moduloChoque < 0) return null;  // No hay choque
+			ret.setModulo( moduloChoque );
+			return ret;
+		} else {
+			return null;
+		}
 	}	
 	
-	/** Calcula el área de la pelota, partiendo de su información de radio
-	 * @return	Área de la pelota
-	 */
+	@Override
 	public double getArea() {
 		return Math.PI*radio*radio;
 	}
 
-	/** Calcula el volumen de la esfera que correspondería a la pelota, partiendo de su información de radio
-	 * @return	Volumen de la pelota suponiendo una esfera perfecta
-	 */
+	@Override
+	// Volumen de la pelota suponiendo una esfera perfecta
 	public double getVolumen() {
 		return 4.0/3*Math.PI*radio*radio*radio;
 	}
-
-	/** Devuelve el avance horizontal del último movimiento (método mover)
-	 * @return	Diferencia entre la posición x actual y la anterior
-	 */
-	public double getAvanceX() {
-		return x - antX;
-	}
 	
-	/** Devuelve el avance vertical del último movimiento (método mover)
-	 * @return	Diferencia entre la posición y actual y la anterior
-	 */
-	public double getAvanceY() {
-		return y - antY;
-	}
-	
-	/** Devuelve el módulo de la velocidad
-	 * @return	Módulo de velocidad (raíz cuadrada de la suma de cuadrados de las velocidades ortogonales vx y vy)
-	 */
-	public double getVelocidad() {
-		return Math.sqrt( velX * velX + velY * velY );
-	}
-	
-	/** Devuelve el cálculo de energía de la bola
-	 * @return	Energía calculada con la fórmula general de energía, entendiendo el volumen de la esfera correspondiente como masa: 0,5 x (m * v^2)
-	 */
+	@Override
 	public double getEnergia() {
 		return 0.5 * getVolumen() * getVelocidad()*getVelocidad();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
+		if (!(obj instanceof Bola)) {
+			return false;
+		}
 		Bola bola2 = (Bola) obj;
 		return x==bola2.x&& y==bola2.y && radio==bola2.radio;
 	}
@@ -231,6 +198,5 @@ public class Bola extends ObjetoAnimacion {
 	public String toString() {
 		return String.format( "[Bola (%.2f,%.2f) r=%.1f v=(%.4f,%.4f)]", x, y, radio, velX, velY );
 	}
-	
-	
+		
 }

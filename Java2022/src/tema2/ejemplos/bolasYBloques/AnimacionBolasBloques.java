@@ -35,8 +35,8 @@ public class AnimacionBolasBloques {
 	
 	// Atributos base
 	private VentanaGrafica v;
-	private GrupoBolas gBolas = new GrupoBolas();
-	private GrupoBloques gBloques = new GrupoBloques();
+	private GrupoObjetosAnimacion gBolas = new GrupoObjetosAnimacion();
+	private GrupoObjetosAnimacion gBloques = new GrupoObjetosAnimacion();
 	// Lógica general
 	private boolean bolasChocan = true;
 	// Lógica de juego
@@ -77,7 +77,7 @@ public class AnimacionBolasBloques {
 				gBolas.choqueBordes( v, milisEntreFrames );
 				// Choque entre bolas
 				if (bolasChocan) {
-					gBolas.choqueEntreBolas( v, milisEntreFrames );
+					gBolas.choqueEntreObjetos( v, milisEntreFrames );
 				}
 				// Corrección bordes
 				gBolas.correccionBordes( v );
@@ -87,12 +87,12 @@ public class AnimacionBolasBloques {
 				// Choque con bordes
 				gBloques.choqueBordes( v, milisEntreFrames );
 				// Choque entre bloques
-				gBloques.choqueEntreBloques( v, milisEntreFrames );
+				gBloques.choqueEntreObjetos( v, milisEntreFrames );
 				// Corrección bordes
 				gBloques.correccionBordes( v );
 				
 				// Choque de bloques y bolas
-				gBolas.choqueConBloques( v, milisEntreFrames, gBloques );
+				gBolas.choqueMultipleConOtrosObjetos( v, milisEntreFrames, gBloques );
 			}
 			avanceFot = false;
 			// Dibujado
@@ -147,7 +147,7 @@ public class AnimacionBolasBloques {
 			}
 			// Búsqueda para borrar bola
 			for (int i=0; i<gBolas.size(); i++) {
-				Bola bola = gBolas.get(i);
+				Bola bola = (Bola) gBolas.get(i);
 				if (bola.contienePunto( click )) {
 					int posicionBola = gBolas.buscar(bola);
 					if (posicionBola!=-1) {  // Se encuentra - borrar la bola y acabar el bucle

@@ -15,10 +15,11 @@ public class MainBolas {
 	private static VentanaGrafica v;
 	
 	// Lógica de juego
-	private static GrupoBolas gBolas = new GrupoBolas();
-	private static GrupoBloques gBloques = new GrupoBloques();
+	private static GrupoObjetosAnimacion gBolas = new GrupoObjetosAnimacion();
+	private static GrupoObjetosAnimacion gBloques = new GrupoObjetosAnimacion();
 	private static int milisEntreFrames = 10;    // Milisegundos entre frames
 	private static boolean pausa = false;        // Pausa del juego
+	private static boolean avanceFot = false;    // Avance de un fotograma
 	private static Point ultRatonPulsado = null; // Última pulsación de ratón
 	
 	/** Método principal
@@ -42,13 +43,13 @@ public class MainBolas {
 			procesaInputTeclado( tecla );
 			procesaRaton();
 			// Movimiento
-			if (!pausa) { // Gestión del movimiento solo si no está en pausa
+			if (!pausa || avanceFot) { // Gestión del movimiento solo si no está en pausa, o solo un fotograma
 				// 1. Movimiento de bolas
 				gBolas.mover( milisEntreFrames );
 				// Choque con bordes
 				gBolas.choqueBordes( v, milisEntreFrames );
 				// Choque entre bolas
-				gBolas.choqueEntreBolas( v, milisEntreFrames );
+				gBolas.choqueEntreObjetos( v, milisEntreFrames );
 				// Corrección bordes
 				gBolas.correccionBordes( v );
 				
@@ -57,13 +58,14 @@ public class MainBolas {
 				// Choque con bordes
 				gBloques.choqueBordes( v, milisEntreFrames );
 				// Choque entre bloques
-				gBloques.choqueEntreBloques( v, milisEntreFrames );
+				gBloques.choqueEntreObjetos( v, milisEntreFrames );
 				// Corrección bordes
 				gBloques.correccionBordes( v );
 				
 				// Choque de bloques y bolas
-				gBloques.choqueConBolas( v, milisEntreFrames, gBolas );
+				gBloques.choqueConOtrosObjetos( v, milisEntreFrames, gBolas );
 			}
+			avanceFot = false;
 			// Dibujado
 			v.borra();  // Quitar para ver diferencia en vez de borrar las bolas
 			v.dibujaImagen( "UD-roller.jpg", v.getAnchura()/2, v.getAltura()/2, v.getAnchura(), v.getAltura(), 1.0, 0.0, 1.0f );
@@ -92,6 +94,8 @@ public class MainBolas {
 			} while (hayChoques);
 		} else if (tecla == KeyEvent.VK_P) {  // P --> Pausa 
 			pausa = !pausa;
+		} else if (tecla == KeyEvent.VK_SPACE) {  // Espacio --> Avance de un fotograma 
+			avanceFot = true;
 		} 
 		// Teclas pulsadas continuas
 		if (v.isTeclaPulsada(KeyEvent.VK_UP)) {  // Cursor arriba -> aumenta velocidad Y hacia arriba del bloque controlable en 10 píxels / segundo
@@ -114,7 +118,7 @@ public class MainBolas {
 			}
 			// Búsqueda para borrar bola
 			for (int i=0; i<gBolas.size(); i++) {
-				Bola bola = gBolas.get(i);
+				Bola bola = (Bola) gBolas.get(i);
 				if (bola.contienePunto( click )) {
 					int posicionBola = gBolas.buscar(bola);
 					if (posicionBola!=-1) {  // Se encuentra - borrar la bola y acabar el bucle

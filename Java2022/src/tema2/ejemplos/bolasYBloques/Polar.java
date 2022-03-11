@@ -87,6 +87,14 @@ public class Polar {
 	public void setModulo( double nuevoModulo ) {
 		modulo = nuevoModulo;
 	}
+	
+	/** Cambia el argumento del vector
+	 * @param nuevoModulo	Nuevo valor de argumento (en radianes)
+	 */
+	public void setArgumento( double nuevoArgumento ) {
+		argumento = nuevoArgumento;
+	}
+	
 	@Override
 	public String toString() {
 		return "|" + modulo + "| " + argumento + " rad";

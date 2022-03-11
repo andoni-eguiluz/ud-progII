@@ -2,6 +2,7 @@ package tema2.ejemplos.bolasYBloques;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
@@ -60,6 +61,25 @@ public class Fisica {
 	//=======================================
 	// Colisiones
 	//=======================================
+
+	/** Calcula el choque entre dos objetos
+	 * @param ventana	Ventana en la que ocurre el choque
+	 * @param objeto1	Objeto 1 que choca
+	 * @param objeto2	Objeto 2 que choca
+	 * @param milis	Milisegundos que pasan en el paso de movimiento
+	 * @param visualizarChoque	(opcional) true para visualizar la info del choque en la ventana y en consola
+	 */
+	public static void calcChoqueEntreObjetos( VentanaGrafica ventana, ObjetoAnimacion objeto1, ObjetoAnimacion objeto2, double milis, boolean... visualizarChoque ) {
+		if (objeto1 instanceof Bola && objeto2 instanceof Bola) {
+			calcChoqueEntreObjetos( ventana, (Bola) objeto1, (Bola) objeto2, milis, visualizarChoque.length>0 && visualizarChoque[0] );
+		} else if (objeto1 instanceof Bloque && objeto2 instanceof Bloque) {
+			calcChoqueEntreObjetos( ventana, (Bloque) objeto1, (Bloque) objeto2, milis );
+		} else if (objeto1 instanceof Bloque && objeto2 instanceof Bola) {
+			calcChoqueEntreObjetos( ventana, (Bloque) objeto1, (Bola) objeto2, milis );
+		} else if (objeto1 instanceof Bola && objeto2 instanceof Bloque) {
+			calcChoqueEntreObjetos( ventana, (Bloque) objeto2, (Bola) objeto1, milis );
+		}
+	}
 	
 	/** Calcula el choque entre dos objetos
 	 * @param ventana	Ventana en la que ocurre el choque
@@ -201,8 +221,8 @@ public class Fisica {
 	 * @param milis	Milisegundos que pasan en el paso de movimiento, permite calcular las correcciones de choque por física de baja precisión (la bola se mete "dentro" del rectángulo)
 	 */
 	public static void calcChoqueEntreObjetos( VentanaGrafica ventana, Bloque bloque, Bola bola, double milis ) {
-		ArrayList<Bloque> l = new ArrayList<>(); l.add( bloque ); 
-		calcChoqueEntreObjetos( ventana, bola, l, milis);
+		ArrayList<ObjetoAnimacion> l = new ArrayList<>(); l.add( bloque ); 
+		calcChoqueMultipleEntreObjetos( ventana, bola, l, milis);
 		/* Implementación con iteraciones pequeñas... se ha sustituido por la (mejor) implementación por aproximaciones sucesivas de varios bloques
 		// Para calcular la física de colisión necesitamos saber el punto aproximado en el que ocurrió la colisión: en función de eso cambiarán de una forma o de otra las velocidades
 		// 1. Hacemos un "slow backwards" del movimiento de rectángulo y círculo hasta que encontremos el punto de choque aproximado ("sacando" de esa forma la bola de la pala)
@@ -279,85 +299,102 @@ public class Fisica {
 		*/
 	}
 
-	/** Calcula el choque entre una bola y el borde de la ventana
-	 * @param ventana	Ventana en la que ocurre el choque
+	/** Calcula el choque entre un objeto y el borde de la ventana
+	 * ATENCIÓN: Funciona actualmente para bola y bloque
+	 * @param rect	Rectángulo de límites en los que ocurre el choque
+	 * @param objetoA	objeto que choca con comportamiento perfectamente elástico (debe ser instancia de Bola o Bloque)
+	 * @param milis	Milisegundos que pasan en el paso de movimiento, permite calcular las correcciones de choque por física de alta precisión (evitando que la bola se meta "dentro" del borde)
+	 */
+	public static void calcChoqueConBorde( Rectangle rect, ObjetoAnimacion objetoA, double milis ) {
+		if (objetoA instanceof Bola) {
+			calcChoqueConBorde( rect, (Bola) objetoA, milis );
+		} else if (objetoA instanceof Bloque) {
+			calcChoqueConBorde( rect, (Bloque) objetoA, milis );
+		}
+	}
+	
+	/** Calcula el choque entre un bloque y el borde de la ventana
+	 * @param rect	Rectángulo de límites en los que ocurre el choque
 	 * @param bola	objeto que choca con comportamiento perfectamente elástico
 	 * @param milis	Milisegundos que pasan en el paso de movimiento, permite calcular las correcciones de choque por física de alta precisión (evitando que la bola se meta "dentro" del borde)
 	 */
-	public static void calcChoqueConBorde( VentanaGrafica ventana, Bola bola, double milis ) {
-		if (!bola.chocaBordeHorizontal(ventana) && !bola.chocaBordeVertical(ventana)) {  // No chocan desde el principio: este método no tiene nada que hacer
+	public static void calcChoqueConBorde( Rectangle rect, Bloque bloque, double milis ) {
+		if (bloque.chocaBordeVertical(rect)) {
+			bloque.setVelY( -bloque.getVelY() );
+		}
+		if (bloque.chocaBordeHorizontal(rect)) {
+			bloque.setVelX( -bloque.getVelX() );
+		}
+	}
+
+	/** Calcula el choque entre una bola y el borde de la ventana
+	 * @param rect	Rectángulo de límites en los que ocurre el choque
+	 * @param bola	objeto que choca con comportamiento perfectamente elástico
+	 * @param milis	Milisegundos que pasan en el paso de movimiento, permite calcular las correcciones de choque por física de alta precisión (evitando que la bola se meta "dentro" del borde)
+	 */
+	public static void calcChoqueConBorde( Rectangle rect, Bola bola, double milis ) {
+		if (!bola.chocaBordeHorizontal(rect) && !bola.chocaBordeVertical(rect)) {  // No chocan desde el principio: este método no tiene nada que hacer
 			return;
 		}
 		double tiempoChoqueVertical = -1;
 		double tiempoChoqueHorizontal = -1;
-		if (bola.chocaBordeVertical(ventana)) {
+		if (bola.chocaBordeVertical(rect)) {
 			double posYInicialBola = bola.getY() - bola.getAvanceY();
-			double distInicialABorde = (bola.getAvanceY()<0) ? posYInicialBola : ventana.getAltura()-posYInicialBola;
+			double distInicialABorde = (bola.getAvanceY()<0) ? posYInicialBola : rect.height-posYInicialBola;
 			tiempoChoqueVertical = (distInicialABorde - bola.getRadio()) / Math.abs(bola.getAvanceY()) * milis;
 		}
-		if (bola.chocaBordeHorizontal(ventana)) {
+		if (bola.chocaBordeHorizontal(rect)) {
 			double posXInicialBola = bola.getX() - bola.getAvanceX();
-			double distInicialABorde = (bola.getAvanceX()<0) ? posXInicialBola : ventana.getAnchura()-posXInicialBola;
+			double distInicialABorde = (bola.getAvanceX()<0) ? posXInicialBola : rect.width-posXInicialBola;
 			tiempoChoqueHorizontal = (distInicialABorde - bola.getRadio()) / Math.abs(bola.getAvanceX()) * milis;
 		}
 		// System.out.println( "Tiempos de choque: H " + tiempoChoqueHorizontal + " - V " + tiempoChoqueVertical + " de " + milis + " en bola " + bola );
 		// Comprobar si el choque es doble y hacer primero el que sea antes. Luego hacer los simples
 		if (tiempoChoqueHorizontal >= 0 && tiempoChoqueVertical >= 0) {
-			System.out.println( "Choque doble" );
 			if (tiempoChoqueHorizontal > tiempoChoqueVertical) {
-				correccionVertical(ventana,bola,milis-tiempoChoqueVertical,tiempoChoqueHorizontal-tiempoChoqueVertical);
-				correccionHorizontal(ventana,bola,tiempoChoqueHorizontal-tiempoChoqueVertical,milis-tiempoChoqueHorizontal);
+				correccionVertical(bola,milis-tiempoChoqueVertical,tiempoChoqueHorizontal-tiempoChoqueVertical);
+				correccionHorizontal(bola,tiempoChoqueHorizontal-tiempoChoqueVertical,milis-tiempoChoqueHorizontal);
 			} else {
-				correccionHorizontal(ventana,bola,milis-tiempoChoqueHorizontal,tiempoChoqueVertical-tiempoChoqueHorizontal);
-				correccionVertical(ventana,bola,tiempoChoqueVertical-tiempoChoqueVertical,milis-tiempoChoqueVertical);
+				correccionHorizontal(bola,milis-tiempoChoqueHorizontal,tiempoChoqueVertical-tiempoChoqueHorizontal);
+				correccionVertical(bola,tiempoChoqueVertical-tiempoChoqueVertical,milis-tiempoChoqueVertical);
 			}
 		} else {
 			if (tiempoChoqueHorizontal>=0) {
-				correccionHorizontal(ventana,bola,milis-tiempoChoqueHorizontal,milis-tiempoChoqueHorizontal);
+				correccionHorizontal(bola,milis-tiempoChoqueHorizontal,milis-tiempoChoqueHorizontal);
 			} else if (tiempoChoqueVertical>=0) {
-				correccionVertical(ventana,bola,milis-tiempoChoqueVertical,milis-tiempoChoqueVertical);
+				correccionVertical(bola,milis-tiempoChoqueVertical,milis-tiempoChoqueVertical);
 			}
 		}
 	}
-		private static void correccionVertical( VentanaGrafica v, Bola bola, double milisADeshacer, double milisAHacerTrasChoque ) {
+		private static void correccionVertical( Bola bola, double milisADeshacer, double milisAHacerTrasChoque ) {
 			bola.setVelXY( -bola.getVelX(), -bola.getVelY() );
 			bola.mover( milisADeshacer );  // Deshace el movimiento extra sobre el borde
 			bola.setVelX( -bola.getVelX() );  // Recupera la velocidad en X dejando invertida la Y para después del choque
 			bola.mover( milisAHacerTrasChoque );  // Hace el movimiento extra tras rebotar
 		}
-		private static void correccionHorizontal( VentanaGrafica v, Bola bola, double milisADeshacer, double milisAHacerTrasChoque ) {
+		private static void correccionHorizontal( Bola bola, double milisADeshacer, double milisAHacerTrasChoque ) {
 			bola.setVelXY( -bola.getVelX(), -bola.getVelY() );
 			bola.mover( milisADeshacer );  // Deshace el movimiento extra sobre el borde
 			bola.setVelY( -bola.getVelY() );  // Recupera la velocidad en X dejando invertida la Y para después del choque
 			bola.mover( milisAHacerTrasChoque );  // Hace el movimiento extra tras rebotar
 		}
 	
-	/** Calcula el choque entre un bloque y el borde de la ventana
+	/** Calcula el choque múltiple entre varios objetos. 
+	 * ATENCIÓN: Actualmente funciona solo para una bola y una lista de bloques
 	 * @param ventana	Ventana en la que ocurre el choque
-	 * @param bola	objeto que choca con comportamiento perfectamente elástico
-	 * @param milis	Milisegundos que pasan en el paso de movimiento, permite calcular las correcciones de choque por física de alta precisión (evitando que la bola se meta "dentro" del borde)
-	 */
-	public static void calcChoqueConBorde( VentanaGrafica ventana, Bloque bloque, double milis ) {
-		if (bloque.chocaBordeVertical(ventana)) {
-			bloque.setVelY( -bloque.getVelY() );
-		}
-		if (bloque.chocaBordeHorizontal(ventana)) {
-			bloque.setVelX( -bloque.getVelX() );
-		}
-	}
-
-	
-	/** Calcula el choque entre varios objetos (una bola y uno o varios bloques)
-	 * @param ventana	Ventana en la que ocurre el choque
-	 * @param bola	Objeto 1 que choca (bola) con comportamiento perfectamente elástico (su velocidad x-y se ve afectada por el choque con los bloques)
-	 * @param lBloques	Lista de objetos bloque con los que choca la bola. Los bloques tienen consideración de masa infinita (su velocidad no se ve afectada)
+	 * @param bola	Objeto 1 que choca (DEBE SER una bola) con comportamiento perfectamente elástico (su velocidad x-y se ve afectada por el choque con los bloques)
+	 * @param lBloques	Lista de objetos (DEBEN SER bloques) con los que choca la bola. Los bloques tienen consideración de masa infinita (su velocidad no se ve afectada)
 	 * @param milis	Milisegundos que pasan en el paso de movimiento, permite calcular las correcciones de choque por física de alta precisión (evitando que la bola se meta "dentro" de los bloques)
 	 */
-	public static void calcChoqueEntreObjetos( VentanaGrafica ventana, Bola bola, ArrayList<Bloque> lBloques, double milis ) {
-		if (lBloques.isEmpty() || lBloques.get(0).vectorChoqueConObjeto( bola )==null) {  // No chocan desde el principio: este método no tiene nada que hacer
+	public static void calcChoqueMultipleEntreObjetos( VentanaGrafica ventana, ObjetoAnimacion bola, ArrayList<ObjetoAnimacion> lBloques, double milis ) {
+		if (lBloques.isEmpty() || !lBloques.get(0).chocaCon(bola)) {  // No chocan desde el principio: este método no tiene nada que hacer
 			return;
 		}
-		iteracionChoqueBolaBloques(ventana, bola, new ArrayList<Bloque>(lBloques), lBloques, milis, 1);
+		if (!(bola instanceof Bola)) return;  // No funciona si no es una bola
+		for (ObjetoAnimacion oa : lBloques) if (!(oa instanceof Bloque)) return;  // No funciona si no son bloques
+		ArrayList<Bloque> nuevaLista = new ArrayList<Bloque>();
+		for (ObjetoAnimacion oa : lBloques) nuevaLista.add( (Bloque) oa );
+		iteracionChoqueBolaBloques(ventana, (Bola) bola, new ArrayList<Bloque>(nuevaLista), nuevaLista, milis, 1);
 	}
 
 		// Método de iteraciones múltiples (recursivo) para calcular posibles varios choques de la bola con distintos bloques dentro de un mismo fotograma
@@ -405,8 +442,8 @@ public class Fisica {
 				Polar velRotadaP = new Polar( velRotada );
 				velRotadaP.rotar( anguloDesv ); // Volver a poner el vector en términos de x,y original
 				Point2D velTrasRebote = velRotadaP.toPoint();
-				bola.setVelX( velTrasRebote.getX() );
-				bola.setVelY( velTrasRebote.getY() );
+				bola.setVelX( velTrasRebote.getX() + bloque.getVelX()/10 ); // Hacemos corrección de velocidad con la velocidad que aplica el bloque a la bola (para que no "atropelle" el bloque a la bola)
+				bola.setVelY( velTrasRebote.getY() + bloque.getVelY()/10 );
 			}
 			// 4. Como hemos vuelto "hacia atrás el movimiento", completamos el movimiento restante dentro del fotograma moviendo "hacia adelante" con las nuevas velocidades
 			bola.mover( tiempoRetroceso );
