@@ -303,7 +303,6 @@ public class Fisica {
 		// System.out.println( "Tiempos de choque: H " + tiempoChoqueHorizontal + " - V " + tiempoChoqueVertical + " de " + milis + " en bola " + bola );
 		// Comprobar si el choque es doble y hacer primero el que sea antes. Luego hacer los simples
 		if (tiempoChoqueHorizontal >= 0 && tiempoChoqueVertical >= 0) {
-			System.out.println( "Choque doble" );
 			if (tiempoChoqueHorizontal > tiempoChoqueVertical) {
 				correccionVertical(ventana,bola,milis-tiempoChoqueVertical,tiempoChoqueHorizontal-tiempoChoqueVertical);
 				correccionHorizontal(ventana,bola,tiempoChoqueHorizontal-tiempoChoqueVertical,milis-tiempoChoqueHorizontal);
