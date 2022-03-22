@@ -14,7 +14,7 @@ public class Persona implements Comparable<Persona> {
 		if (l.contains( new Persona( "Andoni" ) ) ) {
 			System.out.println( "He encontrado a Andoni" );
 		}
-		Collections.sort( l );
+		l.sort(null);
 		System.out.println( l );
 	}
 	
