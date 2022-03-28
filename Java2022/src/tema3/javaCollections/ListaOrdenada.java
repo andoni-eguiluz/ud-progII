@@ -1,6 +1,7 @@
 package tema3.javaCollections;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 // Ejemplo de creación de clase genérica
@@ -13,7 +14,8 @@ import java.util.Random;
  * @author andoni.eguiluz at ingenieria.deusto.es
  * @param <E>	Tipo base de la lista ordenada, debe implementar el interfaz Comparable<E>
  */
-public class ListaOrdenada<E extends Comparable<E>> {
+public class ListaOrdenada<E extends Comparable<E>> 
+	implements Iterable<E> {  // Implementamos el interfaz Iterable para permitir for each (ver ejemplo de main)
 	
 	/** Programa de prueba de la clase
 	 * @param args	No utilizado
@@ -43,6 +45,11 @@ public class ListaOrdenada<E extends Comparable<E>> {
 		
 		// No funciona con un no comparable
 		// ListaOrdenada<java.awt.Point> listaError = new ListaOrdenada<>(); 
+		
+		// Es iterable
+		for (String s : listaO2) {
+			System.out.print( "  " + s );
+		}
 	}
 
 
@@ -113,4 +120,11 @@ public class ListaOrdenada<E extends Comparable<E>> {
     	}
     	return true;
     }
+    
+    // Interfaz iterable
+
+	@Override
+	public Iterator<E> iterator() {
+		return lista.iterator();  // Aprovechamos que el ArrayList ya tiene iterator
+	}
 }
