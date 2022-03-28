@@ -7,6 +7,7 @@ import java.util.Random;
 // Java no incorpora la lista ordenada como una clase dentro de Java Collections porque "violaría" el concepto de lista
 // (interfaz List) en el que se puede meter un elemento en *cualquier* posición
 // Pero podemos implementar una lista ordenada, siempre que aceptemos que no cumple el interfaz List
+// https://stackoverflow.com/questions/8725387/why-is-there-no-sortedlist-in-java
 
 /** Clase lista ordenada
  * @author andoni.eguiluz at ingenieria.deusto.es
