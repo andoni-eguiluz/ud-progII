@@ -2,7 +2,7 @@ package tema2b.resueltos.registros;
 
 import java.util.Date;
 
-public class Consulta extends Registro {
+public class Consulta extends Registro implements RegistroDeUsuario {
 
 	/** Crea una nueva consulta partiendo de una línea de texto con todos los datos en orden, separados por tabulador
 	 * Ejemplo de línea: "Consulta	18/03/2022 12:00	andoni	Consulta de operaciones	9	92500"
@@ -61,4 +61,10 @@ public class Consulta extends Registro {
 	public String toString() {
 		return "{" + super.toString() + " " + usuario + " - " + tipoConsulta + " / " + tiempoAtencionMilis/1000 + " sgs.}";
 	}
+	
+	@Override
+	public boolean esDeUsuario(String usuario) {
+		return this.usuario.equals( usuario );
+	}
+
 }

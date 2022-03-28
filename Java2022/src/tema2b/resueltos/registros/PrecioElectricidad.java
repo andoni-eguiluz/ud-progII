@@ -36,14 +36,20 @@ public class PrecioElectricidad extends Registro implements ConPrecio {
 	public String toString() {
 		return "{" + super.toString() + " " + precioKwH + "/KwH}";
 	}
-	
+
 	@Override
 	public double getPrecio() {
 		return precioKwH;
 	}
-	
+
 	@Override
 	public boolean estaPrecioEnRango(double precioInferior, double precioSuperior) {
-		return (precioInferior<=precioKwH && precioSuperior>=precioKwH);
+		return (precioKwH>=precioInferior && precioKwH<=precioSuperior);
+//		if (precioKwH>=precioInferior && precioKwH<=precioSuperior) {
+//			return true;
+//		} else {
+//			return false;
+//		}
 	}
+
 }

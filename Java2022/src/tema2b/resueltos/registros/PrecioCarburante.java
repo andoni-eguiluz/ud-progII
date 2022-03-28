@@ -53,21 +53,14 @@ public class PrecioCarburante extends Registro implements ConPrecio {
 	public String toString() {
 		return "{" + super.toString() + " " + tipo + " en " + companyia + " - " + precioPorLitro + "/litro}";
 	}
-	
 	@Override
 	public double getPrecio() {
-		return getPrecioPorLitro();
+		return precioPorLitro;
 	}
 	
 	@Override
 	public boolean estaPrecioEnRango(double precioInferior, double precioSuperior) {
-		return (precioInferior<=precioPorLitro && precioSuperior>=precioPorLitro);
-//		if (precioInferior<=precioPorLitro && precioSuperior>=precioPorLitro) {
-//			return true;
-//		} else {
-//			return false;
-//		}
+		return (getPrecio()>=precioInferior && getPrecio()<=precioSuperior);
 	}
-	
 	
 }

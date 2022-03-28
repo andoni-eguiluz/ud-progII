@@ -2,7 +2,7 @@ package tema2b.resueltos.registros;
 
 import java.util.Date;
 
-public class SesionUsuario extends Registro {
+public class SesionUsuario extends Registro implements RegistroDeUsuario {
 	
 	/** Crea una nueva sesión partiendo de una línea de texto con todos los datos en orden, separados por tabulador
 	 * Ejemplo de línea: "DuracionSesion	18/03/2022 12:10	andoni	25500"
@@ -43,6 +43,11 @@ public class SesionUsuario extends Registro {
 	@Override
 	public String toString() {
 		return "{" + super.toString() + " " + usuario + " - " + duracionSesionMilis/1000 + " sgs.}";
+	}
+	
+	@Override
+	public boolean esDeUsuario(String usuario) {
+		return this.usuario.equals( usuario );
 	}
 	
 }
