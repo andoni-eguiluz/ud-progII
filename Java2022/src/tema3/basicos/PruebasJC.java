@@ -85,6 +85,12 @@ public class PruebasJC {
 		System.out.println( setT );
 		setT.remove( "Belfast" );
 		System.out.println( setT );
+		
+		// MAPS
+		HashMap<String,Integer> mapaVotosH = new HashMap<>();
+		// .put --> meter elemento
+		// .get --> sacar elemento
+		// .contains --> elemento está o no está
 	}
 }
 
