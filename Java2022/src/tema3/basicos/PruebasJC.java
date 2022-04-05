@@ -69,7 +69,7 @@ public class PruebasJC {
 		// LinkedList funciona igual
 		LinkedList<String> llPelis = new LinkedList<>();
 		
-		String[] aPelis = { "CODA", "Belfast", "CODA", "Dune", "Drive my car", "CODA", "No mires arriba", "Belfast" };
+		String[] aPelis = { "CODA", "Belfast", "CODA", "Dune", "Drive my car", "CODA", "No mires arriba", "Belfast", "Belfast" };
 		// SETS - lineal SIN REPETICIÓN, SIN POSICIONES. CONSULTA RÁPIDA. 
 		HashSet<String> setH = new HashSet<>();  // Qué necesita? equals + hashCode()
 		TreeSet<String> setT = new TreeSet<>();  // Qué necesita? Ordenable -> Comparable
@@ -88,11 +88,133 @@ public class PruebasJC {
 		
 		// MAPS
 		HashMap<String,Integer> mapaVotosH = new HashMap<>();
+		TreeMap<String,Integer> mapaVotosT = new TreeMap<>();
 		// .put --> meter elemento
 		// .get --> sacar elemento
 		// .contains --> elemento está o no está
+		for (String voto : aPelis) {
+			if (mapaVotosH.containsKey( voto )) {  // Ya había votos para esta peli
+				int numVotosActual = mapaVotosH.get( voto );
+				numVotosActual = numVotosActual + 1;
+				mapaVotosH.replace( voto, numVotosActual );
+				// mapaVotosH.put( voto, numVotosActual );
+				mapaVotosT.replace( voto, numVotosActual );
+			} else {  // Es la primera vez que aparece la peli (primer voto)
+				mapaVotosH.put( voto, 1 );
+				mapaVotosT.put( voto, 1 );
+			}
+		}
+		System.out.println( mapaVotosH );
+		System.out.println( mapaVotosT );
+		// Buscar ganadora
+		int mayorVotos = 0;
+		String peliGanadora = "";
+		for (String pelicula : mapaVotosH.keySet()) {
+			int numVotos = mapaVotosH.get( pelicula );
+			if (numVotos > mayorVotos) {
+				mayorVotos = numVotos;
+				peliGanadora = pelicula;
+			}
+		}
+		System.out.println( "Peli ganadora: " + peliGanadora + " con " + mayorVotos + " votos." );
+		// Si pueden ser varias
+		mayorVotos = 0;
+		TreeSet<String> pelisGanadoras = null;
+		for (String pelicula : mapaVotosH.keySet()) {
+			int numVotos = mapaVotosH.get( pelicula );
+			if (numVotos > mayorVotos) {
+				mayorVotos = numVotos;
+				pelisGanadoras = new TreeSet<>();
+				pelisGanadoras.add( pelicula );
+			} else if (numVotos == mayorVotos) {
+				pelisGanadoras.add( pelicula );
+			}
+		}
+		System.out.println( "Pelis ganadoras: " + pelisGanadoras + " con " + mayorVotos + " votos." );
+		
+		// Se puede hacer sin cambiar contadores, incrementando los mismos?
+		HashMap<String,Contador> mapaConts = new HashMap<>();
+		for (String voto : aPelis) {
+			if (mapaConts.containsKey( voto )) {  // Ya había votos para esta peli
+				Contador numVotosActual = mapaConts.get( voto );
+				numVotosActual.inc();
+			} else {  // Es la primera vez que aparece la peli (primer voto)
+				mapaConts.put( voto, new Contador(1) );
+			}
+		}
+		System.out.println( mapaConts );
+		
+		// Sacar la lista de jueces que han votado a cada peli   0, 1, 2, 3 ....
+		HashMap<String,ArrayList<Integer>> mapaJueces = new HashMap<>();
+		for (int numJuez=0; numJuez<aPelis.length; numJuez++) {
+			String peli = aPelis[numJuez];
+			if (!mapaJueces.containsKey( peli )) {
+				// Primera vez
+				// ArrayList<Integer> nuevaLista = new ArrayList<>();
+				// nuevaLista.add( numJuez );
+				mapaJueces.put( peli, new ArrayList<Integer>( Arrays.asList( numJuez ) ) );
+			} else { // Segunda o sucesiva
+				mapaJueces.get( peli ).add( numJuez );
+			}
+		}
+		System.out.println( mapaJueces );
+		for (String clave : mapaJueces.keySet()) {
+			System.out.println( "Peli " + clave + "\t" + mapaJueces.get(clave) );
+		}
+		
+		// Pelis en vez de Strings?
+		Peli2[] arrayPelis = { new Peli2("CODA"), new Peli2("Belfast"), new Peli2("CODA"), new Peli2("Dune"),
+				new Peli2("Drive my car"), new Peli2("CODA"), new Peli2("No mires arriba"), new Peli2("Belfast"), new Peli2("Belfast") };
+		HashMap<Peli2,Contador> mapaPC = new HashMap<>();
+		for (Peli2 peli : arrayPelis) {
+			if (!mapaPC.containsKey(peli)) {  // Primera vez
+				mapaPC.put( peli, new Contador(1) );
+			} else {  // Segunda y sucesivas
+				mapaPC.get( peli ).inc();
+			}
+		}
+		System.out.println( mapaPC );
 	}
 }
+
+class Peli2 { // Si queremos utilizarla en un hash (clave en un hashmap)
+	private String nombre;
+	public Peli2( String nombre ) {
+		this.nombre = nombre;
+	}
+	@Override
+	public String toString() {
+		return nombre;
+	}
+	@Override
+	public int hashCode() {
+		return nombre.hashCode();
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Peli2) {
+			Peli2 peli2 = (Peli2) obj;
+			return nombre.equals( peli2.nombre );
+		} else {
+			return false;
+		}
+	}
+}
+
+class Contador {
+	private int cont;
+	public Contador( int valInicial ) {
+		cont = valInicial;
+	}
+	public void inc() {
+		cont++;
+	}
+	@Override
+	public String toString() {
+		return "" + cont;
+	}
+}
+
 
 class Peli {
 	private String dato;
