@@ -166,18 +166,22 @@ public class PruebasJC {
 		Peli2[] arrayPelis = { new Peli2("CODA"), new Peli2("Belfast"), new Peli2("CODA"), new Peli2("Dune"),
 				new Peli2("Drive my car"), new Peli2("CODA"), new Peli2("No mires arriba"), new Peli2("Belfast"), new Peli2("Belfast") };
 		HashMap<Peli2,Contador> mapaPC = new HashMap<>();
+		TreeMap<Peli2,Contador> mapaPCTree = new TreeMap<>();
 		for (Peli2 peli : arrayPelis) {
 			if (!mapaPC.containsKey(peli)) {  // Primera vez
 				mapaPC.put( peli, new Contador(1) );
+				mapaPCTree.put( peli, new Contador(1) );
 			} else {  // Segunda y sucesivas
 				mapaPC.get( peli ).inc();
+				mapaPCTree.get( peli ).inc();
 			}
 		}
 		System.out.println( mapaPC );
+		System.out.println( mapaPCTree );
 	}
 }
 
-class Peli2 { // Si queremos utilizarla en un hash (clave en un hashmap)
+class Peli2 implements Comparable<Peli2> { // Si queremos utilizarla en un hash (clave en un hashmap)
 	private String nombre;
 	public Peli2( String nombre ) {
 		this.nombre = nombre;
@@ -198,6 +202,10 @@ class Peli2 { // Si queremos utilizarla en un hash (clave en un hashmap)
 		} else {
 			return false;
 		}
+	}
+	@Override
+	public int compareTo(Peli2 o) {
+		return this.nombre.compareTo( o.nombre );
 	}
 }
 
