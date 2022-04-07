@@ -44,11 +44,7 @@ public class PruebasUtilidadesJavaCollections {
 		System.out.println( l );
 		int res1 = Collections.binarySearch( l, p1 );
 		int res2 = Collections.binarySearch( l, p2 );
-		System.out.println( l.indexOf( p1 ) );
-		System.out.println( l.indexOf( p2 ) );
-		System.out.println( res1 );
-		System.out.println( res2 );
-		// Positivo n -> está en la posición n
+		// Positivo n -> está en la posición... n-1?
 		// Negativo -n -> se podría insertar en la posición (n-1)
 	}
 	
