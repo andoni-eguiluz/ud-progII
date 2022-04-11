@@ -261,6 +261,8 @@ public class VentanaGrafica {
 		// El personaje del centro se mueve con cursores y la pantalla se mueve con él
 		int xPersonaje = 400;
 		int yPersonaje = 300;
+		double zoom = 1.0;
+		v.setMensaje( "Mueve con cursores. Zoom con +/-" );
 		while (!v.estaCerrada()) {
 			// Movimiento de personaje
 			if (v.isTeclaPulsada(KeyEvent.VK_UP)) {
@@ -275,7 +277,17 @@ public class VentanaGrafica {
 			if (v.isTeclaPulsada(KeyEvent.VK_RIGHT)) {
 				xPersonaje += 5;
 			}
-			v.setOffsetDibujo( new Point( xPersonaje - v.getAnchura()/2, yPersonaje - v.getAltura()/2 ) );
+			// Cambio de zoom
+			if (v.isTeclaPulsada(KeyEvent.VK_PLUS)) {
+				zoom = zoom *1.01;
+				v.setEscalaDibujo(zoom);
+			} 
+			if (v.isTeclaPulsada(KeyEvent.VK_MINUS)) {
+				zoom = zoom / 1.01;
+				v.setEscalaDibujo(zoom);
+			} 
+			System.out.println( v.getAnchuraConEscala() + "," + v.getAlturaConEscala() );
+			v.setOffsetDibujo( new Point( (int) (xPersonaje - v.getAnchuraConEscala()/2), (int) (yPersonaje - v.getAlturaConEscala()/2) ) );
 			v.borra();
 			v.dibujaCirculo( 0, 0, 80, 5f, Color.PINK, Color.MAGENTA );  // Elemento fijo
 			v.dibujaImagen( "img/UD-blue-girable.png", 500, 200, 1.0, 0.0, 1.0f );  // Elemento fijo
@@ -590,11 +602,25 @@ public class VentanaGrafica {
 		return panel.getHeight()-1;
 	}
 	
+	/** Devuelve la altura del panel de dibujo de la ventana
+	 * @return	Altura del panel principal (última coordenada y) en unidades de dibujo (aplicando la escala, si la tiene)
+	 */
+	public double getAlturaConEscala() {
+		return panel.getHeight()/escalaDibujo;
+	}
+	
 	/** Devuelve la anchura del panel de dibujo de la ventana
 	 * @return	Anchura del panel principal (última coordenada x) en píxels
 	 */
 	public int getAnchura() {
 		return panel.getWidth()-1;
+	}
+	
+	/** Devuelve la anchura del panel de dibujo de la ventana
+	 * @return	Anchura del panel principal (última coordenada x) en unidades de dibujo (aplicando la escala, si la tiene)
+	 */
+	public double getAnchuraConEscala() {
+		return panel.getWidth()/escalaDibujo;
 	}
 	
 	/** Borra toda la ventana (pinta de color blanco)
@@ -634,11 +660,11 @@ public class VentanaGrafica {
 
 		// Convierte x de coordenadas propuestas a coordenadas visuales (con zoom y desplazamiento)
 		private double calcX( double x ) {
-			return x * escalaDibujo - offsetInicio.x;
+			return x * escalaDibujo - offsetInicio.x * escalaDibujo;
 		}
 		// Convierte y de coordenadas propuestas a coordenadas visuales (con zoom y desplazamiento)
 		private double calcY( double y ) {
-			return (ejeYInvertido?1.0:-1.0) * y * escalaDibujo - offsetInicio.y;
+			return (ejeYInvertido?1.0:-1.0) * y * escalaDibujo - offsetInicio.y * escalaDibujo;
 		}
 
 	/** Dibuja un rectángulo relleno en la ventana
