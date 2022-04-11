@@ -286,7 +286,6 @@ public class VentanaGrafica {
 				zoom = zoom / 1.01;
 				v.setEscalaDibujo(zoom);
 			} 
-			System.out.println( v.getAnchuraConEscala() + "," + v.getAlturaConEscala() );
 			v.setOffsetDibujo( new Point( (int) (xPersonaje - v.getAnchuraConEscala()/2), (int) (yPersonaje - v.getAlturaConEscala()/2) ) );
 			v.borra();
 			v.dibujaCirculo( 0, 0, 80, 5f, Color.PINK, Color.MAGENTA );  // Elemento fijo
