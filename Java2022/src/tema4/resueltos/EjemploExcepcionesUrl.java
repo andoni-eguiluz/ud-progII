@@ -1,4 +1,4 @@
-package tema4.ejemplos;
+package tema4.resueltos;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
