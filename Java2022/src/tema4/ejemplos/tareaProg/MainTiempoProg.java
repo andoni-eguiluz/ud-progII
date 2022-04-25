@@ -1,4 +1,4 @@
-package tema4.ejemplo.tareaProg;
+package tema4.ejemplos.tareaProg;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
