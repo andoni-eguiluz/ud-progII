@@ -1,5 +1,7 @@
 package tema4.ejemplos.tareaProg;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -8,7 +10,7 @@ import javax.swing.JOptionPane;
 
 public class MainTiempoProg {
 	private static GestorTiempoProg gestor;
-	private static final SimpleDateFormat FORMATO_DMYHM = new SimpleDateFormat( "dd/MM/yyyy HH:mm" );
+	public static final SimpleDateFormat FORMATO_DMYHM = new SimpleDateFormat( "dd/MM/yyyy HH:mm" );
 
 	public static void main(String[] args) {
 		gestor = new GestorTiempoProg();
@@ -17,7 +19,8 @@ public class MainTiempoProg {
 	
 	public static void menu() {
 		String[] opciones = {
-			"Añadir tiempo", "Guardar fichero", "Cargar fichero", "Fin"
+			"Añadir tiempo", "Calcular tiempo total", "Guardar fichero bin", "Cargar fichero bin",
+			"Guardar fichero texto", "Cargar fichero texto", "Fin"
 		};
 		String respuestaString;
 		do {
@@ -27,13 +30,26 @@ public class MainTiempoProg {
 			// System.out.println( respuesta );
 			if ("Añadir tiempo".equals(respuestaString)) {
 				anyadirTiempo();
-			} else if ("Guardar fichero".equals(respuestaString)) {
-				guardarFichero();
-			} else if ("Cargar fichero".equals(respuestaString)) {
-				cargarFichero();
+			} else if ("Calcular tiempo total".equals(respuestaString)) {
+				calcularTiempoTotal();
+			} else if ("Guardar fichero bin".equals(respuestaString)) {
+				guardarFichero( true );
+			} else if ("Cargar fichero bin".equals(respuestaString)) {
+				cargarFichero( true );
+			} else if ("Guardar fichero texto".equals(respuestaString)) {
+				guardarFichero( false );
+			} else if ("Cargar fichero texto".equals(respuestaString)) {
+				cargarFichero( false );
 			}
-			
 		} while (!"Fin".equals(respuestaString) && respuestaString!=null);
+	}
+	
+	public static void calcularTiempoTotal() {
+		int suma = 0;
+		for (TiempoProg tp : gestor.getListaTiempos()) {
+			suma += tp.getMinutos();
+		}
+		System.out.println( "Tiempo total: " + suma );
 	}
 	
 	public static void anyadirTiempo() {
@@ -43,7 +59,8 @@ public class MainTiempoProg {
 			Date fecha = FORMATO_DMYHM.parse( resp );
 			resp = JOptionPane.showInputDialog( "Introduce minutos programando:" );
 			int tiempo = Integer.parseInt( resp );
-			
+			TiempoProg tp = new TiempoProg( fecha, tiempo );
+			gestor.addTiempo( tp );
 		} catch (NumberFormatException e) {
 			JOptionPane.showMessageDialog( null, "Error en entrada. Los minutos deben ser enteros y mayores que cero" );
 		} catch (ParseException e) {
@@ -51,12 +68,32 @@ public class MainTiempoProg {
 		}
 	}
 	
-	public static void guardarFichero() {
-		// TODO
+	public static void guardarFichero( boolean binario ) {
+		String nombreFic = JOptionPane.showInputDialog( "Introduce nombre de fichero para guardar:", 
+				binario ? "tiempos.dat" : "tiempos.txt" );
+		try {
+			if (nombreFic!=null && !nombreFic.isEmpty()) {
+				gestor.guardarFichero( binario, nombreFic );
+			}
+		} catch (IOException e) {
+			System.out.println( "Error en la creación del fichero de salida " + nombreFic );
+		}
 	}
 	
-	public static void cargarFichero() {
-		// TODO
+	public static void cargarFichero( boolean binario ) {
+		String nombreFic = JOptionPane.showInputDialog( "Introduce nombre de fichero para cargar:", 
+				binario ? "tiempos.dat" : "tiempos.txt" );
+		if (nombreFic!=null && !nombreFic.isEmpty()) {
+			try {
+				gestor.cargarFichero( binario, nombreFic );
+				System.out.println( "Cargados datos de fichero: " + gestor.getListaTiempos().size() + " registros cargados." );
+			} catch (FileNotFoundException e) {
+				System.out.println( "El fichero que has indicado no existe: " + nombreFic );
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println( "Error en la lectura del fichero " + nombreFic + ". No se ha podido cargar" );
+			}
+		}
 	}
 	
 }

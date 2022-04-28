@@ -1,8 +1,9 @@
 package tema4.ejemplos.tareaProg;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class TiempoProg {
+public class TiempoProg implements Serializable {
 	private Date fechaHora;
 	private int minutos;
 	public TiempoProg(Date fechaHora, int minutos) {
@@ -24,7 +25,7 @@ public class TiempoProg {
 	}
 	@Override
 	public String toString() {
-		return fechaHora + ":" + minutos;
+		return fechaHora + " : " + minutos;
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -34,5 +35,9 @@ public class TiempoProg {
 		} else {
 			return false;
 		}
+	}
+	
+	public String aLinea() {
+		return MainTiempoProg.FORMATO_DMYHM.format( fechaHora ) + "\t" + minutos;
 	}
 }
