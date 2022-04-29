@@ -10,10 +10,10 @@ import java.util.ArrayList;
 
 /** Clase contenedora
  */
-public class GestorTiempoProg {
+public class GestorTiempoProg2 {
 	private ArrayList<TiempoProg> listaTiempos;
 
-	public GestorTiempoProg() {
+	public GestorTiempoProg2() {
 		listaTiempos = new ArrayList<>();
 	}
 	

@@ -9,11 +9,11 @@ import java.util.Date;
 import javax.swing.JOptionPane;
 
 public class MainTiempoProg {
-	private static GestorTiempoProg gestor;
+	private static GestorTiemposProg gestor;
 	public static final SimpleDateFormat FORMATO_DMYHM = new SimpleDateFormat( "dd/MM/yyyy HH:mm" );
 
 	public static void main(String[] args) {
-		gestor = new GestorTiempoProg();
+		gestor = new GestorTiemposProg();
 		menu();
 	}
 	
@@ -47,7 +47,7 @@ public class MainTiempoProg {
 	public static void calcularTiempoTotal() {
 		int suma = 0;
 		for (TiempoProg tp : gestor.getListaTiempos()) {
-			suma += tp.getMinutos();
+			suma += tp.getTiempo();
 		}
 		System.out.println( "Tiempo total: " + suma );
 	}
@@ -57,7 +57,13 @@ public class MainTiempoProg {
 				FORMATO_DMYHM.format(new Date()) );
 		try {
 			Date fecha = FORMATO_DMYHM.parse( resp );
+			if (resp==null | resp.isEmpty()) {  // El usuario no quiere introducir fecha
+				return;
+			}
 			resp = JOptionPane.showInputDialog( "Introduce minutos programando:" );
+			if (resp==null | resp.isEmpty()) {  // El usuario no quiere introducir minutos
+				return;
+			}
 			int tiempo = Integer.parseInt( resp );
 			TiempoProg tp = new TiempoProg( fecha, tiempo );
 			gestor.addTiempo( tp );
