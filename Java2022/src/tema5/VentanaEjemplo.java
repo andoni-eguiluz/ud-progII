@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import utils.ventanas.componentes.JLabelGrafico;
+
 public class VentanaEjemplo extends JFrame {
 	// Main de prueba
 	public static void main(String[] args) {
@@ -16,7 +18,7 @@ public class VentanaEjemplo extends JFrame {
 		// Inicialización de la ventana
 		setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 		setSize( 600, 400 );
-		setLocation( 2000, 100 );
+		// setLocation( 2000, 100 );
 		// this.setLocationRelativeTo( null );
 		// Crear contenedores
 		JPanel pSuperior = new JPanel();
@@ -47,6 +49,9 @@ public class VentanaEjemplo extends JFrame {
 		add( pSuperior, BorderLayout.NORTH );
 		add( pCentral, BorderLayout.CENTER );
 		add( pInferior, BorderLayout.SOUTH );
+///		JLabel lEscudo = new JLabel( new ImageIcon( VentanaEjemplo.class.getResource( "/utils/ventanas/ventanaBitmap/img/UD-blue-girable.png" )) );
+		JLabelGrafico lEscudo = new JLabelGrafico( "/utils/ventanas/ventanaBitmap/img/UD-blue-girable.png", 180, 100 );  // Obsérvese que la altura con west en borderlayout no influye
+		add( lEscudo, BorderLayout.WEST );
 		pSuperior.add( lTitulo );
 		pInferior.add( bPeligro );
 		pInferior.add( bFalsaAlarma );

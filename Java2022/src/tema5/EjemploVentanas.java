@@ -8,13 +8,13 @@ public class EjemploVentanas {
 		JFrame ventana = new JFrame();
 		ventana.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 		ventana.setSize(600, 400);
-		ventana.setLocation(2000, 100);  // Pone la coordenada de la esquina sup izquierda
+		ventana.setLocation(100, 100);  // Pone la coordenada de la esquina sup izquierda
 		ventana.setTitle( "Primera ventana");
 
 		JFrame ventana2 = new JFrame();
 		ventana2.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
 		ventana2.setSize(600, 400);
-		ventana2.setLocation(2200, 100);  // Pone la coordenada de la esquina sup izquierda
+		ventana2.setLocation(200, 100);  // Pone la coordenada de la esquina sup izquierda
 		ventana2.setTitle( "Segunda ventana");
 		ventana2.setVisible( true );  // MAGIA!!!
 

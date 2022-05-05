@@ -2,6 +2,8 @@ package tema5;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.*;
 
@@ -55,7 +57,6 @@ public class MiPrimeraVentana {
 		panelCentral.add( textAreaDatos );
 		panelCentral.add( checkBox );
 		panelCentral.add( comboBox );
-		
 		
 		// Visibilizarla
 		ventana.setVisible( true );  // MAGIA!

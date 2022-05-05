@@ -10,7 +10,7 @@ public class VentanaLogin extends JFrame {
 	// Static - método de prueba
 	public static void main(String[] args) {
 		VentanaLogin vl = new VentanaLogin( "Primer login" );
-		vl.setLocation( 2000, 100 );
+		// vl.setLocation( 2000, 100 );
 		vl.setVisible( true );
 	}
 	
