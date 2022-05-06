@@ -8,6 +8,7 @@ public class VentanaLogin extends JFrame {
 	
 	private JTextField tfUsuario;
 	private JTextField tfPassword;
+	private JLabel lMensajeInfo;
 	
 	public VentanaLogin() {
 		this.setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
@@ -35,7 +36,7 @@ public class VentanaLogin extends JFrame {
 		JLabel lPassword = new JLabel( "Password:" );
 		tfPassword = new JTextField( "", 15 );
 		JCheckBox cbRecuerdame = new JCheckBox( "Recuérdame", true );
-		JLabel lMensajeInfo = new JLabel( " " );
+		lMensajeInfo = new JLabel( " " );
 		JLabel lLogo = new JLabel( new ImageIcon( "src/utils/ventanas/ventanaBitmap/img/UD-blue-girable.png" ) );
 		JButton bRegistro = new JButton( "Registro" );
 		JButton bAceptar = new JButton( "Aceptar" );
@@ -64,17 +65,134 @@ public class VentanaLogin extends JFrame {
 		pInferior.add( bCancelar );
 		pInferior.add( bOlvidada );
 		// 6.- Crear y asignar gestores de evento
-		bCancelar.addActionListener( new EscuchadorBoton() );
+		// bCancelar.addActionListener( new EscuchadorBotonExterno() );  // Posibilidad 1: clase externa
+		// bCancelar.addActionListener( new EscuchadorBotonInterno() );  // Posibilidad 2: clase interna
+		// Posibilidad 3: clase interna anónima
+		bCancelar.addActionListener( new ActionListener() {
+			// Creando un atributo equivalente a la local
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// lLogo.setText( "logo?" );
+				lMensajeInfo.setText( "Pulsado cancelar" );
+			}
+		});
+		bAceptar.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				lMensajeInfo.setText( "Pulsado aceptar" );
+			}
+		});
+		tfUsuario.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				lMensajeInfo.setText( "Enter en texto usuario" );
+			}
+		});
+		tfUsuario.addKeyListener( new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (tfUsuario.getText().length() >= 10) {
+					e.consume();
+				}
+				if (e.getKeyChar()>='a' && e.getKeyChar()<='z') {
+					System.out.println( "minúscula");
+				} else {
+					e.consume();
+				}
+				System.out.println( "TYPED " + e );
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				System.out.println( "RELEASED " + e );
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				System.out.println( "PRESSED " + e );
+			}
+		});
+		KeyListener escuchadorEscape = new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode()==KeyEvent.VK_ESCAPE) {
+					dispose();
+				}
+			}
+		};
+		tfUsuario.addKeyListener(escuchadorEscape);
+		tfPassword.addKeyListener(escuchadorEscape);
+		cbRecuerdame.addKeyListener(escuchadorEscape);
+		bAceptar.addKeyListener(escuchadorEscape);
+		bCancelar.addKeyListener(escuchadorEscape);
+		bOlvidada.addKeyListener(escuchadorEscape);
+		bRegistro.addKeyListener(escuchadorEscape);
+		tfUsuario.addFocusListener( new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				System.out.println( "LOST " + e );
+				System.out.println( "Valido que el usuario sea correcto..." );
+				if (!tfUsuario.getText().equals("andoni")) {
+					lMensajeInfo.setText( "Usuario incorrecto" );
+					tfUsuario.requestFocus();
+				}
+			}
+			@Override
+			public void focusGained(FocusEvent e) {
+				System.out.println( "GAINED " + e );
+				tfUsuario.select(0, tfUsuario.getText().length());
+			}
+		});
+		KeyListener comprobarDatosEnUP = new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (tfUsuario.getText().length()>0 && tfPassword.getText().length()>0) {
+					bAceptar.setEnabled( true );
+				} else {
+					bAceptar.setEnabled( false );
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		};
+		tfUsuario.addKeyListener(comprobarDatosEnUP);
+		tfPassword.addKeyListener(comprobarDatosEnUP);
 	}
 	
 	public String getUsuario() {
+		// Podría acceder a este atributo: lMensajeInfo.setText( "Nada" );
 		return tfUsuario.getText();
 	}
+	
+	
+	// 2: Clase interna
+	class EscuchadorBotonInterno implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// System.out.println( "Pulsado!" );
+			lMensajeInfo.setText( "Pulsado cancelar" );
+		}
+	}
+	
 }
 
-class EscuchadorBoton implements ActionListener {
+// 1: Clase externa
+class EscuchadorBotonExterno implements ActionListener {
+	// private JLabel miCampoMensaje
+	// public void setCampoMensaje( JLabel l ) ...
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println( "Pulsado!" );
+		// System.out.println( "Pulsado!" );
+		// No tenemos acceso a lMensajeInfo.setText( "Pulsado cancelar" );
 	}
 }
