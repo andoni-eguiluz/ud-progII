@@ -122,7 +122,7 @@ public class VentanaLogin extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode()==KeyEvent.VK_ESCAPE) {
-					dispose();
+					/* VentanaLogin.this. */ dispose();
 				}
 			}
 		};
@@ -167,6 +167,22 @@ public class VentanaLogin extends JFrame {
 		};
 		tfUsuario.addKeyListener(comprobarDatosEnUP);
 		tfPassword.addKeyListener(comprobarDatosEnUP);
+		bAceptar.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Recuperación de datos del usuario que ha hecho login
+				DatoUsuario[] datos = new DatoUsuario[] {
+					new DatoUsuario( "A", 100, 50 ),
+					new DatoUsuario( "B", 200, 180 ),
+					new DatoUsuario( "C", 120, 90 )
+				};
+				VentanaUsuario v = new VentanaUsuario( datos );
+				v.setVisible( true );
+				// v.setVentanaVuelta( this );
+				// v.setDatosUsuario( datos );
+				dispose();
+			}
+		});
 	}
 	
 	public String getUsuario() {
