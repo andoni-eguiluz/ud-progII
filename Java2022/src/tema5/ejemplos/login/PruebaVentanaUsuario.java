@@ -11,7 +11,7 @@ public class PruebaVentanaUsuario {
 				new DatoUsuario( "C", 120, 90 )
 		};
 		VentanaUsuario v = new VentanaUsuario( datos );
-		v.setLocation( 2000, 100 );
+		v.setLocation( 200, 100 );
 		v.setVisible( true );
 	}
 }
