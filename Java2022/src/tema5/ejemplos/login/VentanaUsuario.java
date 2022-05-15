@@ -220,12 +220,6 @@ public class VentanaUsuario extends JFrame {
 					posicionInicial = null;
 					l.setBackground( Color.LIGHT_GRAY );
 					// TODO actualizar el dato en la lista / contenedor de datos
-					(new Thread() {
-						@Override
-						public void run() {
-							
-						}
-					}).start();
 				}
 			};
 			l.addMouseListener(ma);
