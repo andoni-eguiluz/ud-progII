@@ -75,11 +75,13 @@ public class VentanaUsuario extends JFrame {
 			}
 		});
 		// Posibilidad 1 - que el ratón lo escuche el panel
-		MouseAdapter ma = new MouseAdapter() {  // WindowAdapter (clase) vs WindowListener (interfaz).  WindowAdapter además implementa tanto ML como MML
+		MouseAdapter ma = new MouseAdapter() {  
+			// MouseAdapter (clase) vs MouseListener (interfaz).  MouseAdapter además implementa tanto ML como MML
 			JLabel lSelec = null;
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				System.out.println( "CLICK " + e );
+				System.out.println( e.isControlDown() );
 				if (e.getClickCount()==2) {
 					JLabel l = new JLabel( "NEW" );
 					l.setBackground( Color.LIGHT_GRAY );
@@ -100,13 +102,24 @@ public class VentanaUsuario extends JFrame {
 				System.out.println( "PRESSED " + e );
 				lSelec = null;
 				for (Component c : pCentral.getComponents()) {
-					JLabel l = (JLabel) c;
-					double dist = e.getPoint().distance( l.getX()+ANCHO_LABEL_DATO/2, l.getY()+ ALTO_LABEL_DATO/2);
+					double dist = e.getPoint().distance( c.getX()+ANCHO_LABEL_DATO/2, c.getY()+ ALTO_LABEL_DATO/2);
 					if (dist < 11) {
-						lSelec = l;
-						lSelec.setBackground( Color.CYAN );
+						if (c instanceof JLabel) {
+							JLabel l = (JLabel) c;
+							lSelec = l;
+							lSelec.setBackground( Color.CYAN );
+							break;
+						}
 					}
 				}
+			}
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				System.out.println( "DRAGGED " + e );
+				if (lSelec!=null) {
+					lSelec.setLocation( e.getX()-ANCHO_LABEL_DATO/2, e.getY()-ALTO_LABEL_DATO/2 );
+				}
+				// TODO pendiente actualizar el item correspondinte
 			}
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -124,14 +137,6 @@ public class VentanaUsuario extends JFrame {
 				System.out.println( "EXITED " + e );
 			}
 			@Override
-			public void mouseDragged(MouseEvent e) {
-				System.out.println( "DRAGGED " + e );
-				if (lSelec!=null) {
-					lSelec.setLocation( e.getX()-ANCHO_LABEL_DATO/2, e.getY()-ALTO_LABEL_DATO/2 );
-				}
-				// TODO pendiente actualizar el item correspondinte
-			}
-			@Override
 			public void mouseMoved(MouseEvent e) {
 				System.out.println( "MOVED " + e );
 			}
@@ -144,6 +149,7 @@ public class VentanaUsuario extends JFrame {
 		pCentral.addComponentListener( new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
+				System.out.println( "COMP RESIZED" );
 				for (Component c : pCentral.getComponents()) {
 					JLabel l = (JLabel) c;
 					if (l.getX()+ANCHO_LABEL_DATO > pCentral.getWidth() || l.getY()+ALTO_LABEL_DATO>pCentral.getHeight()) {
@@ -154,10 +160,6 @@ public class VentanaUsuario extends JFrame {
 		});
 		this.addWindowListener( new WindowListener() {  
 			@Override
-			public void windowOpened(WindowEvent e) {
-				System.out.println( "WINDOW OPENED" );
-			}
-			@Override
 			public void windowIconified(WindowEvent e) {
 				System.out.println( "WINDOW ICONIFIED" );
 			}
@@ -166,8 +168,16 @@ public class VentanaUsuario extends JFrame {
 				System.out.println( "WINDOW DEICONIFIED" );
 			}
 			@Override
+			public void windowActivated(WindowEvent e) {
+				System.out.println( "WINDOW ACTIVATED" );
+			}
+			@Override
 			public void windowDeactivated(WindowEvent e) {
 				System.out.println( "WINDOW DEACTIVATED" );
+			}
+			@Override
+			public void windowOpened(WindowEvent e) {
+				System.out.println( "WINDOW OPENED" );
 			}
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -179,10 +189,6 @@ public class VentanaUsuario extends JFrame {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				System.out.println( "WINDOW CLOSED" );
-			}
-			@Override
-			public void windowActivated(WindowEvent e) {
-				System.out.println( "WINDOW ACTIVATED" );
 			}
 		});
 	}
@@ -205,14 +211,15 @@ public class VentanaUsuario extends JFrame {
 				@Override
 				public void mousePressed(MouseEvent e) {
 					posicionInicial = e.getPoint();
+					l.setBackground( Color.CYAN );
 				}
 				@Override
 				public void mouseDragged(MouseEvent e) {
 					if (posicionInicial!=null) {
 						int despX = e.getX()-posicionInicial.x;
 						int despY = e.getY()-posicionInicial.y;
+						System.out.println( posicionInicial + " --> " + e.getPoint() + " - despl. " + despX + "," + despY );
 						l.setLocation( l.getX() + despX, l.getY() + despY );
-						l.setBackground( Color.CYAN );
 					}
 				}
 				@Override
