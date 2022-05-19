@@ -208,10 +208,12 @@ public class VentanaUsuario extends JFrame {
 			// Posibilidad 2 de eventos de ratón
 			MouseAdapter ma = new MouseAdapter() {
 				Point posicionInicial;
+				Point posicionLabelInicial;
 				@Override
 				public void mousePressed(MouseEvent e) {
 					posicionInicial = e.getPoint();
 					l.setBackground( Color.CYAN );
+					posicionLabelInicial = l.getLocation();
 				}
 				@Override
 				public void mouseDragged(MouseEvent e) {
@@ -227,11 +229,40 @@ public class VentanaUsuario extends JFrame {
 					posicionInicial = null;
 					l.setBackground( Color.LIGHT_GRAY );
 					// TODO actualizar el dato en la lista / contenedor de datos
+					// Comprobar que el drag no se haga fuera de la ventana
+					recolocarLabel( l, posicionLabelInicial );
 				}
 			};
 			l.addMouseListener(ma);
 			l.addMouseMotionListener(ma);
 		}
+	}
+	
+	private void recolocarLabel( JLabel l, Point posicionInicial ) {
+		Thread hilo = new Thread() {
+			public void run() {
+				Point posicion = l.getLocation();
+				if (posicion.x>pCentral.getWidth() || posicion.y>pCentral.getHeight() || posicion.x<0 || posicion.y<0) {
+					double posX = l.getX();
+					double posY = l.getY();
+					double incX = (posicionInicial.x - posX) / 100;
+					double incY = (posicionInicial.y - posY) / 100;
+					l.setBackground( Color.YELLOW );
+					for (int i=0; i<100; i++) {
+						posX += incX;
+						posY += incY;
+						l.setLocation( (int) posX, (int) posY );
+						try {
+							Thread.sleep( 50 );
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					l.setBackground( Color.LIGHT_GRAY );
+				}
+			}
+		};
+		hilo.start();
 	}
 	
 	public void setDatosUsuario( DatoUsuario[] datos ) {
